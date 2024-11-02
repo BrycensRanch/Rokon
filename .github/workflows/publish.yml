@@ -164,7 +164,7 @@ jobs:
         run: |
           sudo dnf update -y
           sudo dnf copr enable @go-sig/golang-rawhide -y
-          sudo dnf install -y git golang gtk4-devel gobject-introspection-devel go-vendor-tools @development-tools clang @development-libs @c-development flatpak flatpak-builder fedora-packager fedora-review @rpm-development-tools go-rpm-macros
+          sudo dnf install -y git golang gtk4-devel gobject-introspection-devel go-vendor-tools @development-tools clang @development-libs @c-development flatpak flatpak-builder fedora-packager fedora-review @rpm-development-tools go-rpm-macros yq
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           flatpak remote-add --user --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
           flatpak install --user -y flathub org.flatpak.Builder
@@ -238,10 +238,6 @@ jobs:
           path: |
             *.AppImage
             *.AppImage.zsync
-      - uses: chrisdickinson/setup-yq@latest
-        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
-        with:
-          yq-version: v4.44.3 # renovate: version from https://github.com/mikefarah/yq
       - name: 🔷 Update Flatpak Data
         run: |
           rm flathub/go.mod.yml flathub/modules.txt
@@ -333,14 +329,10 @@ jobs:
         run: |
           sudo apt update
           sudo add-apt-repository ppa:longsleep/golang-backports -y
-          sudo apt install -y libgtk-4-dev libgirepository1.0-dev build-essential devscripts debhelper dh-make golang dput
+          sudo apt install -y libgtk-4-dev libgirepository1.0-dev build-essential devscripts debhelper dh-make golang dput yq
       - name: Install Snapcraft
         if: ${{ github.event_name == 'pull_request' }}
         uses: samuelmeuli/action-snapcraft@v2
-      - uses: chrisdickinson/setup-yq@latest
-        if: ${{ github.event_name == 'pull_request' }}
-        with:
-          yq-version: v4.44.3 # renovate: version from https://github.com/mikefarah/yq
       - name: Extract branch name
         shell: bash
         if: ${{ github.event_name == 'pull_request' }}
