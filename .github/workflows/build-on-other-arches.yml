@@ -27,14 +27,14 @@ jobs:
         id: meta
         uses: ./.github/actions/setup-docker-build-env
         with:
-          tmpfs: "false"
+          tmpfs: "true"
       - name: Build Docker Container and push
         uses: docker/build-push-action@v6
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/ppc64le, linux/s390x, linux/aarch64
+          platforms: linux/aarch64
           cache-from: type=gha
           cache-to: type=gha,mode=max
   multiarch:
