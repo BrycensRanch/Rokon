@@ -207,12 +207,6 @@ fatimage: ## build self contained AppImage that can run on older Linux systems w
 	$(MAKE) PACKAGED=true PACKAGEFORMAT=AppImage EXTRAGOFLAGS="$(EXTRAGOFLAGS) -trimpath" EXTRALDFLAGS="$(EXTRALDFLAGS) -s -w" build
 	$(MAKE) PREFIX=AppDir/usr install
 	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 appimagetool -s deploy ./AppDir/usr/share/applications/io.github.brycensranch.Rokon.desktop
-	@if command -v upx > /dev/null; then \
-		echo "UPX found. Compressing binaries..."; \
-		upx --best --lzma -v AppDir/usr/bin/$(TARGET) || echo "Failed to compress $(TARGET) binary."; \
-	else \
-		echo "UPX not found. Skipping compression."; \
-	fi
 	# My application follows the https://docs.fedoraproject.org/en-US/packaging-guidelines/AppData/ but this tool doesn't care lol
 	mv AppDir/usr/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml AppDir/usr/share/metainfo/io.github.brycensranch.Rokon.appdata.xml
 	cp ./AppDir/usr/share/icons/hicolor/256x256/apps/io.github.brycensranch.Rokon.png ./AppDir
