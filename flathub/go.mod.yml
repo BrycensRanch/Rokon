@@ -3,10 +3,10 @@
   path: modules.txt
   type: file
 - dest: vendor/github.com/adrg/xdg
-  sha256: acdbe9c6386de47fec0dda18af1d08e319bab8a9fd134625edaa28f9e745f5c2
+  sha256: 52847b48afcd46cfd312bc857a8df08643cfffc4103d59a40c3ce648e0196c13
   strip-components: 3
   type: archive
-  url: https://proxy.golang.org/github.com/adrg/xdg/@v/v0.5.2.zip
+  url: https://proxy.golang.org/github.com/adrg/xdg/@v/v0.5.3.zip
 - dest: vendor/github.com/benesch/cgosymbolizer
   sha256: 77732751af3b44429790b41f2db2b8a7f4a19fdd10ccbf5069730a48cf5e419c
   strip-components: 3
