@@ -1,8 +1,9 @@
+# Maintainer: Brycen G <brycengranville@outlook.com>
 
 # This container *can* work under NVIDIA.
 # For example, you could run the command `distrobox create --name rokon --image ghcr.io/brycensranch/rokon --nvidia`
 
-FROM fedora:41 AS builder
+FROM fedora:latest AS builder
 
 RUN dnf install -y \
     make \
@@ -10,10 +11,14 @@ RUN dnf install -y \
     gtk4-devel \
     gobject-introspection-devel \
     which \
-    patchelf \
+    clang \
     upx
 RUN dnf clean all
 
+# DO WHATEVER IT TAKES TO BUILD AS FAST AS POSSIBLE!!! TO INFINITY... AND BEYOND
+ENV CC=clang
+ENV CXX=clang++
+ENV CFLAGS="-O0 -w -fno-strict-aliasing -gline-tables-only"
 
 
 WORKDIR /app
@@ -23,10 +28,10 @@ COPY . .
 # NOTB = Prevents the creation of tar.gz files. It's not needed and the container won't use it.
 RUN make PACKAGED=true TBPKGFMT=docker NOTB=1 tarball
 
-FROM fedora:41 AS runner
+FROM fedora:latest AS runner
 
 WORKDIR /app
 
 COPY --from=builder /app/tarball .
 
-CMD "./rokon.sh"
+CMD ["./rokon"]

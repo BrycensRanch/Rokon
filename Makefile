@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-SHELL := $(shell which sh)
+SHELL := $(shell command -v which >/dev/null 2>&1 && which sh || echo /bin/sh)
 # Define the default install directory
 PREFIX ?= /usr/local
 VERSION ?= $(shell cat VERSION)
@@ -14,6 +14,23 @@ EXTRALDFLAGS :=
 EXTRAGOFLAGS :=
 BUILDTAGS :=
 UNAME_S := $(shell uname -s)
+# Determine the system architecture using various methods
+ARCH := $(shell \
+    if command -v rpm > /dev/null 2>&1; then \
+        rpm -E '%{_arch}'; \
+    elif command -v dpkg > /dev/null 2>&1; then \
+        dpkg --print-architecture; \
+    elif command -v apk > /dev/null 2>&1; then \
+        apk --print-arch; \
+    elif command -v uname > /dev/null 2>&1; then \
+        uname -m; \
+    elif command -v arch > /dev/null 2>&1; then \
+        arch; \
+    elif command -v lscpu > /dev/null 2>&1; then \
+        lscpu | grep Architecture | awk '{print $$2}'; \
+    else \
+        echo "unknown"; \
+    fi)
 
 
 
@@ -49,51 +66,71 @@ APPLICATIONSDIR = $(DESTDIR)$(PREFIX)/share/applications
 ICONDIR = $(DESTDIR)$(PREFIX)/share/icons/hicolor
 METAINFODIR = $(DESTDIR)$(PREFIX)/share/metainfo
 TARBALLDIR ?= ./tarball
+SANITYCHECK ?= 1
 RUNDIR ?= ./run
 RUNLIBS ?= $(RUNDIR)/libs
 ABS_RUNDIR := $(shell realpath $(RUNDIR))
-MAKESELF := $(shell if [ -f ./makeself*.run ]; then echo "./makeself*.run && makeself*/makeself.sh"; \
-                           elif [ -f ./makeself*/makeself.sh ]; then echo "./makeself*/makeself.sh"; \
-                           elif command -v makeself > /dev/null; then echo "makeself"; \
-                           elif command -v makeself.sh > /dev/null; then echo "makeself.sh"; \
-                           else echo ""; fi)
+# Check if selfextract exists in the PATH
+SELFEXTRACT := $(shell command -v selfextract 2> /dev/null)
+
+# Determine the selfextract path based on environment variables
+ifneq ($(GOBIN),)
+    SELFEXTRACT_PATH := $(GOBIN)/selfextract
+else ifneq ($(GOPATH),)
+    SELFEXTRACT_PATH := $(GOPATH)/bin/selfextract
+else
+    # Fallback to the safe default
+    SELFEXTRACT_PATH := $(HOME)/go/bin/selfextract  # Safe default path
+endif
+
+# If selfextract command is found in the specified path
+ifeq ($(wildcard $(SELFEXTRACT_PATH)),)
+	SELFEXTRACT := $(SELFEXTRACT_PATH)
+else
+    SELFEXTRACT := $(SELFEXTRACT_PATH)
+endif
+
+
+
 TBPKGFMT ?= portable
 ABS_TARBALLDIR := $(shell realpath $(TARBALLDIR))
 
 TBLIBSDIR ?= $(TARBALLDIR)/libs
-TAR_NAME ?= Rokon-$(shell uname)-$(VERSION)-$(shell uname -m).tar.gz
+TAR_NAME ?= Rokon-$(UNAME_S)-$(VERSION)-$(ARCH).tar.gz
 # Unix* users know .run is for them. DO NOT include it in the filename!
-RUNFILE_NAME ?= Rokon-$(VERSION)-$(shell uname -m).run
+RUNFILE_NAME ?= Rokon-$(VERSION)-$(ARCH).run
 
 
 make_wrapper_script = \
 	echo '\#!/bin/sh' > $1/$(TARGET); \
+	echo 'dir="$$(cd -P -- "$$(dirname -- "$$0")" && pwd -P)"' >> $1/$(TARGET); \
+	echo 'cd "$$dir"' >> $1/$(TARGET); \
 	echo 'export LD_LIBRARY_PATH="./libs:$$LD_LIBRARY_PATH"' >> $1/$(TARGET); \
 	echo 'export LD_PRELOAD="./libs/libc.so.6"' >> $1/$(TARGET); \
 	echo 'export XKB_DEFAULT_INCLUDE_PATH="./share/X11/xkb"' >> $1/$(TARGET); \
 	echo 'export XKB_CONFIG_ROOT="./share/X11/xkb"' >> $1/$(TARGET); \
-	echo 'exec ./libs/ld-linux* "./bin/$(TARGET)" "$$@"' >> $1/$(TARGET); \
+	echo 'if [ -e ./libs/ld*.so* ]; then exec ./libs/ld*.so* "./bin/$(TARGET)" "$$@"; else exec ./bin/$(TARGET) "$$@"; fi' >> $1/$(TARGET); \
 	chmod +x $1/$(TARGET); \
 	sed -i 's/rokon/\.\/$(TARGET)/g' $1/io.github.brycensranch.Rokon.desktop
 
 
 
+
+
 copy_deps = \
-	cp -L --no-preserve=mode -v $$(ldd $1 | grep 'ld-linux' | awk '{print $$1}') $2; \
-	chmod +x $2/*.so*; \
-	strip --strip-all $2/*.so* || echo "Stripping libraries failed! Tarball *may* be larger than expected."; \
-	ldd -d -r $1 | awk '{print $$3}' | grep -v 'not found' | while read -r dep; do \
+	cp -L --no-preserve=mode -v $$(ldd $1 | grep -E '(^|[^a-zA-Z0-9])ld' | awk '{print $$1}') $2; \
+	ldd $1 | awk '{print $$3}' | grep -v 'not found' | while read -r dep; do \
 		if [ -n "$$dep" ]; then \
-			echo "Copying dependency: $$dep"; \
-			cp -L --no-preserve=mode -v "$$dep" $2 || { echo "Failed to copy $$dep"; exit 1; }; \
+			cp -L --no-preserve=mode "$$dep" $2 || { echo "Failed to copy $$dep"; exit 1; }; \
 		fi; \
-		ldd -d -r "$$dep" | awk '{print $$3}' | grep -v 'not found' | while read -r subdep; do \
+		ldd "$$dep" | awk '{print $$3}' | grep -v 'not found' | while read -r subdep; do \
 			if [ -n "$$subdep" ]; then \
-				echo "Copying sub-dependency: $$subdep"; \
-				cp -L --no-preserve=mode -v "$$subdep" $2 || { echo "Failed to copy $$subdep"; exit 1; }; \
+				cp -L --no-preserve=mode "$$subdep" $2 || { echo "Failed to copy $$subdep"; exit 1; }; \
 			fi; \
 		done; \
-	done
+	done; \
+	chmod +x $2/*.so* || echo "Failed to set libraries executable! Oh well"; \
+	strip --strip-all $2/*.so* || echo "Stripping libraries failed! Tarball *may* be larger than expected."
 
 
 # Target to resolve dependencies
@@ -110,6 +147,10 @@ all: mod inst gen build tarball fatimage spell lint test
 check: ## runs basic checks
 check: spell lint test
 
+.PHONY: tidy
+tidy: ## go mod tidy
+tidy: mod
+
 .PHONY: precommit
 precommit: ## validate the branch before commit
 precommit: all vuln
@@ -125,7 +166,7 @@ help:
 .PHONY: clean
 clean: ## remove files created during build pipeline
 	$(call print-target)
-	rm -rf dist .flatpak io.github.brycensranch.Rokon.desktop tarball io.github.brycensranch.Rokon.metainfo.xml macos/rokon .flatpak-builder flathub/.flatpak-builder flathub/repo *.log *.zip modules.txt flathub/export macos/share flathub/*.flatpak AppDir src squashfs-root *.AppImage makeself* *.run *.rpm *.pdf *.rtf windows/*.rtf *.deb *.msi *.exe pkg/ *.pkg.tar.zst .ptmp* *.tar* *.snap *.zsync rokon Rokon debian/tmp debian/rokon* *.changes *.buildinfo debian/.debhelper coverage.* '"$(shell go env GOCACHE)/../golangci-lint"'
+	rm -rf dist .flatpak io.github.brycensranch.Rokon.desktop tarball io.github.brycensranch.Rokon.metainfo.xml macos/rokon .flatpak-builder flathub/builddir flathub/.flatpak-builder flathub/repo *.log *.zip modules.txt flathub/export macos/share flathub/*.flatpak AppDir src squashfs-root *.AppImage makeself* *.run run/ *.rpm *.pdf *.rtf windows/*.rtf *.deb *.msi *.exe pkg/ *.pkg.tar.zst .ptmp* *.tar* *.snap *.zsync rokon Rokon debian/tmp debian/rokon* *.changes *.buildinfo debian/.debhelper coverage.* '"$(shell go env GOCACHE)/../golangci-lint"'
 	# go clean -i -cache -testcache -modcache -fuzzcache -x
 
 .PHONY: nuke
@@ -166,75 +207,51 @@ fatimage: ## build self contained AppImage that can run on older Linux systems w
 	$(MAKE) PACKAGED=true PACKAGEFORMAT=AppImage EXTRAGOFLAGS="$(EXTRAGOFLAGS) -trimpath" EXTRALDFLAGS="$(EXTRALDFLAGS) -s -w" build
 	$(MAKE) PREFIX=AppDir/usr install
 	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 appimagetool -s deploy ./AppDir/usr/share/applications/io.github.brycensranch.Rokon.desktop
-	rm AppDir/usr/lib64/libLLVM* || true
-	@if command -v glibc-downgrade > /dev/null; then \
-		echo "glibc-downgrade found. Downgrading binaries and libraries to glibc 2.33..."; \
-		for lib in AppDir/usr/lib64/*.so*; do \
-			if [[ "$(basename "$$lib")" != *"libc.so"* && "$(basename "$$lib")" != *"libm.so"* && "$(basename "$$lib")" != *"libstdc++"* ]]; then \
-				echo "Applying glibc-downgrade to $$lib"; \
-				glibc-downgrade 2.33 "$$lib" > /dev/null 2>&1; \
-			else \
-				echo "Skipping $$lib"; \
-			fi; \
-		done; \
-		glibc-downgrade 2.33 AppDir/usr/bin/$(TARGET); \
-	else \
-		echo "glibc-downgrade not found. Skipping downgrade."; \
-	fi
-	@if command -v upx > /dev/null; then \
-		echo "UPX found. Compressing binaries..."; \
-		upx --best --lzma -v AppDir/usr/bin/$(TARGET) || echo "Failed to compress $(TARGET) binary."; \
-	else \
-		echo "UPX not found. Skipping compression."; \
-	fi
 	# My application follows the https://docs.fedoraproject.org/en-US/packaging-guidelines/AppData/ but this tool doesn't care lol
 	mv AppDir/usr/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml AppDir/usr/share/metainfo/io.github.brycensranch.Rokon.appdata.xml
 	cp ./AppDir/usr/share/icons/hicolor/256x256/apps/io.github.brycensranch.Rokon.png ./AppDir
-	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 mkappimage --comp zstd --ll -u "gh-releases-zsync|BrycensRanch|Rokon|latest|Rokon-*$(shell uname -m).AppImage.zsync" ./AppDir
+	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 mkappimage --comp zstd --ll -u "gh-releases-zsync|BrycensRanch|Rokon|latest|Rokon-*$(ARCH).AppImage.zsync" ./AppDir
 
+.PHONY: basedimage
+basedimage: ## create AppImage from existing tarball directory
+	$(call print-target)
+	cp $(TARBALLDIR)/$(TARGET) $(TARBALLDIR)/AppRun
+	mkdir -p $(TARBALLDIR)/usr/share/metainfo
+	mkdir -p $(TARBALLDIR)/usr/share/applications
+	cp $(TARBALLDIR)/io.github.brycensranch.Rokon.desktop $(TARBALLDIR)/usr/share/applications
+	cp $(TARBALLDIR)/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml $(TARBALLDIR)/usr/share/metainfo/io.github.brycensranch.Rokon.appdata.xml
+	cp usr/share/icons/hicolor/256x256/apps/io.github.brycensranch.Rokon.png $(TARBALLDIR)
+	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 mkappimage --comp zstd --ll -u "gh-releases-zsync|BrycensRanch|Rokon|latest|Rokon-*$(ARCH).AppImage.zsync" $(TARBALLDIR)
+
+.ONESHELL:
 .PHONY: tarball
 tarball: ## build self contained Tarball that auto updates
 	$(call print-target)
 	@echo "Building Rokon Tarball version: $(VERSION)"
+	@echo "This process requires the following command line utils to work properly: awk, ldd, tar"
+	@echo "SHELL: $(SHELL) ARCH: $(ARCH)"
 	rm -rf $(TARBALLDIR) || sudo rm -v -rf $(TARBALLDIR)
 	mkdir -p $(TARBALLDIR)
 	mkdir -p $(TBLIBSDIR)
 	$(MAKE) PACKAGED=true PACKAGEFORMAT=$(TBPKGFMT) EXTRAGOFLAGS="$(EXTRAGOFLAGS) -trimpath" EXTRALDFLAGS="$(EXTRALDFLAGS) -s -w -linkmode=external" build
 	$(MAKE) PREFIX=$(TARBALLDIR) APPLICATIONSDIR=$(TARBALLDIR) install
-	cp -v ./windows/portable.txt $(TARBALLDIR)
+	cp ./windows/portable.txt $(TARBALLDIR)
 	$(call copy_deps,$(TARBALLDIR)/bin/$(TARGET),$(TBLIBSDIR))
-	# patchelf --set-interpreter libs/ld-linux-$(subst _,-,$(shell uname -m)).so.2 --force-rpath --set-rpath libs $(TARBALLDIR)/bin/$(TARGET)
-	$(call make_wrapper_script,$(TARBALLDIR))
-	@if command -v glibc-downgrade > /dev/null; then \
-		echo "glibc-downgrade found. Downgrading binaries and libraries to glibc 2.33..."; \
-		for lib in $(TBLIBSDIR)/*.so*; do \
-			if [[ "$(basename "$$lib")" != *"libc.so"* && "$(basename "$$lib")" != *"libm.so"* && "$(basename "$$lib")" != *"libstdc++"* ]]; then \
-				echo "Applying glibc-downgrade to $$lib"; \
-				glibc-downgrade 2.33 "$$lib" > /dev/null 2>&1; \
-			else \
-				echo "Skipping $$lib"; \
-			fi; \
-		done; \
-		glibc-downgrade 2.33 $(TARBALLDIR)/bin/$(TARGET); \
-	else \
-		echo "glibc-downgrade not found. Skipping downgrade."; \
-	fi
-	@if command -v upx > /dev/null; then \
-		echo "UPX found. Compressing binaries..."; \
-		upx --best --lzma -v $(TARBALLDIR)/bin/$(TARGET) || echo "Failed to compress $(TARGET) binary."; \
-	else \
-		echo "UPX not found. Skipping compression."; \
-	fi
 	$(call make_wrapper_script,$(TARBALLDIR))
 	cd /usr && cp -r --parents -L --no-preserve=mode -r share/glib-2.0/schemas/gschemas.compiled share/X11 share/gtk-4.0 share/icons/Adwaita $(ABS_TARBALLDIR)
+	cd -
 	rm -rf $(TARBALLDIR)/share/gtk-4.0/emoji || true
-	cd $(TARBALLDIR) && LD_DEBUG=libs ./$(TARGET) --version; \
-	status=$$?; \
-	if [ $$status -ne 0 ]; then \
-	    echo "Sanity check failed. See output above for details."; \
-	    exit $$status; \
+	@if [ "$(SANITYCHECK)" == "1" ]; then \
+		LD_DEBUG=libs $(TARBALLDIR)/$(TARGET) --version; \
+		status=$$?; \
+		if [ $$status -ne 0 ]; then \
+			echo "Sanity check failed. See output above for details."; \
+			exit $$status; \
+		else \
+			echo "Sanity check succeeded."; \
+		fi; \
 	else \
-	    echo "Sanity check succeeded."; \
+		echo "Sanity check skipped."; \
 	fi
 
 ifeq ($(NOTB),1)
@@ -242,7 +259,7 @@ ifeq ($(NOTB),1)
 else
 		tar -czf $(TAR_NAME) $(TARBALLDIR)
 		@if command -v zsyncmake >/dev/null 2>&1; then \
-			zsyncmake $(TAR_NAME) -u "gh-releases-zsync|BrycensRanch|Rokon|latest|Rokon-$(shell uname)-*-$(shell uname -m).tar.gz.zsync"; \
+			zsyncmake $(TAR_NAME) -u "gh-releases-zsync|BrycensRanch|Rokon|latest|$(TAR_NAME).zsync"; \
 		else \
 			echo "zsyncmake not found. Please install it to generate the zsync file."; \
 		fi
@@ -250,19 +267,45 @@ else
 		@echo "Tarball created: $(TAR_NAME)"
 endif
 
+.ONESHELL:
+.PHONY: check_selfextract
+check_selfextract:
+	@if [ ! -x "$(SELFEXTRACT_PATH)" ]; then \
+		echo "selfextract command not found in $(SELFEXTRACT_PATH), installing..."; \
+		cd tools && go get github.com/synthesio/selfextract && go install -v github.com/synthesio/selfextract; \
+		cd -; \
+		echo "selfextract installed..."; \
+	else \
+		echo "Using selfextract located at: $(SELFEXTRACT_PATH)"; \
+	fi
+
+.ONESHELL:
 .PHONY: run
 run: ## create run "package"
 	$(call print-target)
+	$(MAKE) check_selfextract
+	rm $(RUNFILE_NAME) || true
 	$(MAKE) PACKAGED=true PACKAGEFORMAT="run" TBPKGFMT="run" TARBALLDIR=$(RUNDIR) NOTB=1 tarball
-	$(MAKESELF) --sha256 $(RUNDIR) Rokon-$(VERSION)-$(uname -m).run Rokon ./$(TARGET)
-	LD_DEBUG=libs ./Rokon-$(VERSION)-$(uname -m).run -- "--version"; \
-	status=$$?; \
-	if [ $$status -ne 0 ]; then \
-	    echo "Sanity check failed. See output above for details."; \
-	    exit $$status; \
+	cp $(RUNDIR)/$(TARGET) $(RUNDIR)/selfextract_startup
+	$(SELFEXTRACT) -f $(RUNFILE_NAME) -C $(RUNDIR) .
+	@if [ "$(SANITYCHECK)" == "1" ]; then \
+		./$(RUNFILE_NAME) --version; \
+		status=$$?; \
+		if [ $$status -ne 0 ]; then \
+			echo "Secondary Sanity check failed. See output above for details."; \
+			exit $$status; \
+		else \
+			echo "Secondary Sanity check succeeded."; \
+		fi; \
 	else \
-	    echo "Sanity check succeeded."; \
+		echo "Secondary Sanity check skipped."; \
 	fi
+	@if command -v zsyncmake >/dev/null 2>&1; then \
+		zsyncmake $(RUNFILE_NAME) -u "gh-releases-zsync|BrycensRanch|Rokon|latest|$(RUNFILE_NAME).zsync"; \
+	else \
+		echo "zsyncmake not found. Please install it to generate the zsync file."; \
+	fi
+	@echo "Cheers, the run file was successfully created. It is the file ./$(RUNFILE_NAME) 🚀"
 
 .PHONY: dev
 dev: ## go run -v .
@@ -281,7 +324,7 @@ inst: ## go install tools
 	$(call print-target)
 	cd tools && go get $(shell cd tools && go list -e -f '{{ join .Imports " " }}' -tags=tools)
 
-
+.ONESHELL:
 .PHONY: install
 install: ## installs Rokon into $PATH and places desktop files
 	$(call print-target)
@@ -360,7 +403,7 @@ gen: ## go generate
 .PHONY: build
 build: ## go build -v -o rokon
 	$(call print-target)
-	@echo "Building version $(VERSION)"
+	@echo "Building version $(VERSION) commit $(COMMIT) on branch $(BRANCH)"
 	go build -v -ldflags="-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.packaged=$(PACKAGED) -X main.packageFormat=$(PACKAGEFORMAT) -X main.branch=$(BRANCH) $(EXTRALDFLAGS)" $(EXTRAGOFLAGS) -o $(TARGET) -tags "$(BUILDTAGS)" .
 
 .PHONY: spell

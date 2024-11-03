@@ -25,50 +25,24 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Docker meta
+      - name: Setup Docker Build Environment
         id: meta
-        uses: docker/metadata-action@v5
-        with:
-          # list of Docker images to use as base name for tags
-          images: |
-            ghcr.io/${{ github.repository_owner }}/rokon
-          # generate Docker tags based on the following events/attribute
-          tags: |
-            type=edge,branch=master
-            type=schedule,pattern=nightly
-            type=ref,event=branch
-            type=ref,event=tag
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
-            type=raw,value=latest
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Login to GHCR
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        uses: ./.github/actions/setup-docker-build-env
       - name: Build Docker Container and push
         uses: docker/build-push-action@v6
         with:
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
+          continue-on-error: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
   archlinux:
     timeout-minutes: 125
     runs-on: [self-hosted, archlinux]
-    # if: github.repository != 'BrycensRanch/Rokon'
+    env:
+      CC: clang
+      CXX: clang++
     steps:
       - name: Cleanup directory
         run: sudo rm -rf $GITHUB_WORKSPACE/* || true
@@ -86,9 +60,8 @@ jobs:
           for repo in "extra" "testing" "extra-testing"; do
               grep -qxF "[$repo]" /etc/pacman.conf || echo -e "[$repo]\nInclude = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
           done
-          sudo pacman -Syu --needed --noconfirm git go gtk4 base-devel gnupg wget curl bash gobject-introspection namcap
-          wget https://github.com/megastep/makeself/releases/download/release-2.5.0/makeself-2.5.0.run
-          chmod +x *.run
+          sudo pacman -Syu --needed --noconfirm git go gtk4 base-devel gnupg wget curl bash gobject-introspection namcap clang
+          yay -Syu --noconfirm shc
       - name: 👁️ Ensure Code is Linted
         continue-on-error: true
         run: make check
@@ -103,10 +76,6 @@ jobs:
       - name: Install the Package
         run: |
           sudo pacman -U --noconfirm "$pkg_name"
-
-      - name: Run basic sanity check
-        run: |
-          rokon --version
 
       - name: Run Namcap
         run: |
@@ -123,7 +92,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: rokon-${{runner.os}}-failed-tarball-${{ runner.arch }}
+          name: rokon-${{runner.os}}-failed-tarball-x86_64
           path: |
             tarball
             run
@@ -133,7 +102,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: rokon-${{runner.os}}-tarball-${{ runner.arch }}
+          name: rokon-${{runner.os}}-tarball-x86_64
           include-hidden-files: true
           if-no-files-found: error
           path: |
@@ -143,17 +112,18 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: rokon-${{runner.os}}-runfile-${{ runner.arch }}
+          name: rokon-${{runner.os}}-runfile-x86_64
           include-hidden-files: true
           if-no-files-found: error
           path: |
             *.run
+            *.run.zsync
       - name: 🗃️ Upload Built ArchLinux Package 📦
         uses: actions/upload-artifact@v4
         if: always()
 
         with:
-          name: rokon-archlinux-pkg-${{ runner.arch }}
+          name: rokon-archlinux-pkg-x86_64
           if-no-files-found: error
           path: "*pkg*"
       - name: 🗑️ Remove Artifacts
@@ -166,12 +136,11 @@ jobs:
         run: ls -R
       - name: 🗃️ Upload Vendored Source
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: rokon-vendored-source
           path: |
             .
-            !.git/objects
+            !.git
           include-hidden-files: true
           if-no-files-found: error
       - name: Start building on other arches
@@ -179,8 +148,8 @@ jobs:
         with:
           workflow: build-on-other-arches.yml
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repo: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN || github.token }}
+          repo: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
   fedora:
     timeout-minutes: 125
     runs-on: [self-hosted, fedora]
@@ -195,19 +164,19 @@ jobs:
         run: |
           sudo dnf update -y
           sudo dnf copr enable @go-sig/golang-rawhide -y
-          sudo dnf install -y git golang gtk4-devel gobject-introspection-devel go-vendor-tools @development-tools @development-libs @c-development flatpak flatpak-builder fedora-packager fedora-review @rpm-development-tools go-rpm-macros
+          sudo dnf install -y git golang gtk4-devel gobject-introspection-devel go-vendor-tools @development-tools clang @development-libs @c-development flatpak flatpak-builder fedora-packager fedora-review @rpm-development-tools go-rpm-macros
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           flatpak remote-add --user --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
           flatpak install --user -y flathub org.flatpak.Builder
       - name: Create RPM build environment
-        if: github.repository_owner != 'BrycensRanch'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch'
         run: |
           rpmdev-setuptree
       - name: Uninstall Old RPMs
-        if: github.repository_owner != 'BrycensRanch'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch'
         run: sudo dnf remove -y rokon rokon-debuginfo rokon-debugsource golang-github-brycensranch-aptabase-devel
       - name: Build and Install RPMs
-        if: github.repository_owner != 'BrycensRanch'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch'
         run: |
           for spec in ./*.spec; do
               echo "Building $spec"
@@ -225,11 +194,8 @@ jobs:
 
               echo "Finished building and installing RPMs for $spec"
           done
-      - name: Test built RPM
-        if: github.repository_owner != 'BrycensRanch'
-        run: rokon --version
       - name: Uninstall built RPMs
-        if: github.repository_owner != 'BrycensRanch'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch'
         run: sudo dnf remove -y rokon rokon-debuginfo rokon-debugsource golang-github-brycensranch-aptabase-devel
       - name: Lint AppStream Metadata
         run: |
@@ -246,10 +212,10 @@ jobs:
           git_tag_gpgsign: true
           git_push_gpgsign: false
       - name: 🖼️ Assemble the AppImage
+        env:
+          CC: clang
+          CXX: clang++
         run: |
-          wget https://raw.githubusercontent.com/droidian/glibc-downgrade/refs/heads/droidian/glibc-downgrade
-          chmod +x glibc-downgrade
-          sudo mv glibc-downgrade /usr/local/bin/
           wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
           chmod +x appimagetool-*.AppImage
           mv appimagetool-* appimagetool
@@ -259,7 +225,7 @@ jobs:
           mv mkappimage-* mkappimage
           sudo mv mkappimage /usr/local/bin
           sudo dnf copr enable elxreno/zsync -y
-          sudo dnf in -y binutils desktop-file-utils patchelf python3 python3-pip fakeroot python3-setuptools squashfs-tools util-linux zsync appstream fuse fuse-libs upx
+          sudo dnf in -y binutils desktop-file-utils python3 python3-pip fakeroot python3-setuptools squashfs-tools util-linux zsync appstream fuse fuse-libs upx
           make fatimage
           ./*.AppImage --version
       - name: 🗃️ Upload Built AppImage 📦
@@ -267,13 +233,13 @@ jobs:
         if: always()
 
         with:
-          name: rokon-AppImage-${{ runner.arch }}
+          name: rokon-AppImage-x86_64
           if-no-files-found: error
           path: |
             *.AppImage
             *.AppImage.zsync
       - uses: chrisdickinson/setup-yq@latest
-        if: github.repository_owner != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
         with:
           yq-version: v4.44.3 # renovate: version from https://github.com/mikefarah/yq
       - name: 🔷 Update Flatpak Data
@@ -296,24 +262,24 @@ jobs:
           commit_message: "build(flathub): update go vendor modules [skip ci]"
           commit_author: "github-actions <41898282+github-actions[bot]@users.noreply.github.com>"
       - name: Extract branch name
-        if: github.repository_owner != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
         shell: bash
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
       - name: Set source branch for Flatpak
-        if: github.repository_owner != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
         run: yq '.modules[0].sources[0].branch = "${{env.BRANCH_NAME}}"' -i flathub/io.github.brycensranch.Rokon-beta.yml
         env:
           BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
 
       - name: Set source URL for Flatpak
-        if: github.repository_owner != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
         run: yq '.modules[0].sources[0].url = "${{env.GITHUB_REPOSITORY_URL}}"' -i flathub/io.github.brycensranch.Rokon-beta.yml
         env:
-          GITHUB_REPOSITORY_URL: "${{ github.server_url }}/${{ github.repository }}.git"
+          GITHUB_REPOSITORY_URL: "${{ github.server_url }}/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}.git"
 
       - name: ⚙️ Assemble the Flatpak!
-        if: github.repository_owner != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
         working-directory: flathub
         run: |
           flatpak-builder --disable-rofiles-fuse --install --user --install-deps-from=flathub --force-clean repo/ io.github.brycensranch.Rokon-beta.yml
@@ -322,23 +288,23 @@ jobs:
           # Create a Flatpak bundle for the beta version
           flatpak build-bundle export io.github.brycensranch.Rokon-beta.flatpak io.github.brycensranch.Rokon master --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo
       - name: Test Flatpak
-        if: github.repository_owner != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
         run: |
           flatpak --branch=beta --user run io.github.brycensranch.Rokon --version
       - name: 🗃️ Upload Built RPMs 📦
         uses: actions/upload-artifact@v4
-        if: always() && github.repository_owner != 'BrycensRanch'
+        if: always() && (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch'
         with:
-          name: rokon-rpm-fedora-${{ runner.arch }}
+          name: rokon-rpm-fedora-x86_64
           if-no-files-found: error
           path: |
             *.rpm
 
       - name: 🥙 Upload Built Flatpaks 📦
         uses: actions/upload-artifact@v4
-        if: always() && github.repository_owner != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        if: always() && (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
         with:
-          name: rokon-flatpak-${{ runner.arch }}
+          name: rokon-flatpak-x86_64
           if-no-files-found: error
           path: |
             flathub/*.flatpak
@@ -403,7 +369,7 @@ jobs:
         run: yq '.parts.rokon.source-branch = "${{ steps.extract_branch.outputs.branch }}"' -i snapcraft.yaml
       - name: Switch snap git repository
         if: ${{ github.event_name == 'pull_request' }}
-        run: yq '.parts.rokon.source = "${{ github.server_url }}/${{ github.repository }}"' -i snapcraft.yaml
+        run: yq '.parts.rokon.source = "${{ github.server_url }}/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}"' -i snapcraft.yaml
       - name: Force snap to be grade devel
         if: ${{ github.event_name == 'pull_request' }}
         run: yq '.grade = "devel"' -i snapcraft.yaml
@@ -491,7 +457,7 @@ jobs:
       fail-fast: false
       matrix:
         arch:
-          - amd64
+          - x64
     env:
       result: msi
     defaults:
@@ -535,7 +501,7 @@ jobs:
 
           cat<<EOF >> "$GITHUB_OUTPUT"
           version=$version
-          name=Rokon-Setup-${{ runner.arch }}
+          name=Rokon-Setup-x86_64
           EOF
       - name: Install
         run: |
@@ -659,7 +625,7 @@ jobs:
           set +e
           false
           while [ $? -ne 0 ]; do
-            create-dmg --volname Rokon --volicon macos/icon.icns --window-size 600 400 --icon-size 100 --icon "Rokon.app" 200 150 --hide-extension "Rokon.app" --app-drop-link 400 150 Rokon_macOS_${{ runner.arch }}.dmg $result/dmg
+            create-dmg --volname Rokon --volicon macos/icon.icns --window-size 600 400 --icon-size 100 --icon "Rokon.app" 200 150 --hide-extension "Rokon.app" --app-drop-link 400 150 Rokon_macOS_x86_64.dmg $result/dmg
           done
       - name: Find and mount DMG
         id: mount-dmg

@@ -7,6 +7,7 @@ toolchain go1.23.2
 require (
 	github.com/client9/misspell v0.3.4
 	github.com/golangci/golangci-lint v1.61.0
+	github.com/synthesio/selfextract v0.0.0-20240323225418-337a9cebfd86
 	golang.org/x/vuln v1.1.3
 )
 
@@ -92,6 +93,7 @@ require (
 	github.com/karamaru-alpha/copyloopvar v1.1.0 // indirect
 	github.com/kisielk/errcheck v1.7.0 // indirect
 	github.com/kkHAIKE/contextcheck v1.1.5 // indirect
+	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/kulti/thelper v0.6.3 // indirect
 	github.com/kunwardeep/paralleltest v1.0.10 // indirect
 	github.com/kyoh86/exportloopref v0.1.11 // indirect

@@ -16,32 +16,31 @@
 
 
 
-# Checking is disabled until I can troubleshoot this:
+# License Checking is disabled until I can troubleshoot this:
 # + go_vendor_license --config go-vendor-tools.toml report expression --verify 'AGPL-3.0-only AND BSD-3-Clause AND CC-BY-SA-4.0 AND ISC AND MIT AND MPL-2.0'
 # Using detector: askalono
 # The following modules are missing license files:
 # - vendor/github.com/brycensranch/go-aptabase/pkg
 # - vendor/github.com/diamondburned/gotk4/pkg
 %bcond check 0
+# Does not seem to work on OpenSUSE Tumbleweed. Still builds with gcc??
+%global toolchain clang
 
 # https://github.com/BrycensRanch/Rokon
 %global goipath         github.com/brycensranch/rokon
 %global forgeurl        https://github.com/BrycensRanch/Rokon
-%global commit          3c784069f9cb006600dd2eadd0ccab53d8189d85
+%global version         1.0.0
 
 
 %if 0%{?fedora}
-%gometa -L -f
+%gometa -L
 %endif
-
 
 Name:           rokon
-Version:        1.0.0
-%if 0%{?fedora}
-Release:        %autorelease -p
-%else
-Release:        18%{?dist}
-%endif
+# Note for Rokon Contributors: Do not touch the version or release. GitHub Actions handles these and bump as necessary.
+# On OpenSUSE Build Service, the Release is overwritten which is out of my control.
+Version:        %{version}
+Release:        22%{?dist}
 Summary:        Control your Roku device with your desktop!
 
 
@@ -55,9 +54,8 @@ BuildRequires:  go
 BuildRequires:  go-vendor-tools
 %endif
 
-BuildRequires:  gcc
+BuildRequires:  clang
 BuildRequires:  unzip
-BuildRequires:  gcc-c++
 BuildRequires:  gtk4-devel
 BuildRequires:  gobject-introspection-devel
 Requires:       gtk4
@@ -81,22 +79,26 @@ ls
 # Setup the correct compilation flags for the environment
 # Not all distributions do this automatically
 %if 0%{?fedora}
-    # Fedora specific behavior (no-op or something else)
     # Do nothing, since Fedora 33 the build flags are already set
 %else
     %set_build_flags
 %endif
+# Since some RPM distributions think they're better than to lower themselves to clang...
+# Cough cough openSUSE not respecting the toolchain variable
+go env -w CC=clang
+go env -w CXX=clang++
+
 # Rokon's Makefile still respects any CFLAGS LDFLAGS CXXFLAGS passed to it. It is compliant.
 # https://lists.fedoraproject.org/archives/list/devel@lists.fedoraproject.org/thread/PK5PEKWE65UC5XQ6LTLSMATVPIISQKQS/
 # Do not compress the DWARF debug information, it causes the build to fail!
 # As of Go 1.11, debug information is compressed by default. We're disabling that.
 
-%if 0%{?mageia}
-    # Fixes RPM build errors:
-    # error: Empty %files file /builddir/build/BUILD/Rokon-master/debugsourcefiles.list
-    # Empty %files file /builddir/build/BUILD/Rokon-master/debugsourcefiles.list
-    %define _debugsource_template %{nil}
-%endif
+# Fixes RPM build errors:
+# Empty %files file /builddir/build/BUILD/Rokon-master/debugsourcefiles.list
+# Previously, this failed on Mageia only. However, after moving to Clang for faster compilation across the board, it has failed on
+# Fedora Linux as well. Since Fedora Linux is the main target and my development machine, I have decided to disable this due to lack of being able to test it.
+# Although this is disappointing, this is in line to what the Go macros already do on Fedora Linux.
+%define _debugsource_template %{nil}
 
 %define rpmRelease %{?dist}
 
@@ -124,12 +126,13 @@ ls
               DOCDIR=%{_docdir}
 %endif
 
+
 %check
+./rokon --version
 %if 0%{?fedora}
 %if %{with check}
 %go_vendor_license_check -c go-vendor-tools.toml
 %endif
-./rokon --version
 %endif
 
 %if 0%{?fedora}
@@ -163,14 +166,17 @@ ls
 %else
 
 %changelog
-* Tue Sep 3 2024 Brycen <brycengranville@outlook.com> 1.0.0-6
+* Thu Oct 31 2024 Brycen G <brycengranville@outlook.com> 1.0.0-20
+- Build with clang
+- Include GNOME service file for configuring notifications for Rokon via settings
+* Tue Sep 3 2024 Brycen G <brycengranville@outlook.com> 1.0.0-6
 - Removed sysinfo package decreasing binary size and portability and startup time
 - Added metainfo file for appstream
--Added icons to package
+- Added icons to package
 - Added desktop entry
 - Added license file to package
 - Added documentation to package
-* Mon Sep 2 2024 Brycen <brycengranville@outlook.com> 1.0.0-3
+* Mon Sep 2 2024 Brycen G <brycengranville@outlook.com> 1.0.0-3
 - Initial package
 %endif
 
