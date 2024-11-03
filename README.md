@@ -1,4 +1,4 @@
-  <h1 align="center">
+<h1 align="center">
       <img alt="Rokon logo" src="assets/Rokon.png" width="240" />
       <h1 align="center" >Rokon (Roku Remote for your computer) </h1>
   </p>
@@ -135,6 +135,8 @@ The application communicates with Roku devices using the Roku External Control P
 - Rokon's documentation is licensed under [`GFDL-1.3`](https://raw.githubusercontent.com/IQAndreas/markdown-licenses/master/gnu-fdl-v1.3.md)
 
 Rokon is free software as defined by the [FSF](https://fsf.org). It collects telemetry data by default, see [PRIVACY.md](./PRIVACY.md)
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FBrycensRanch%2FRokon.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FBrycensRanch%2FRokon?ref=badge_large)
 
 ## Undocumented API Calls
 
