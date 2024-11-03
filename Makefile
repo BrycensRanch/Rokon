@@ -238,12 +238,6 @@ tarball: ## build self contained Tarball that auto updates
 	cp ./windows/portable.txt $(TARBALLDIR)
 	$(call copy_deps,$(TARBALLDIR)/bin/$(TARGET),$(TBLIBSDIR))
 	$(call make_wrapper_script,$(TARBALLDIR))
-	@if command -v upx > /dev/null; then \
-		echo "UPX found. Compressing binaries..."; \
-		upx --best --lzma -v $(TARBALLDIR)/bin/$(TARGET) || echo "Failed to compress $(TARGET) binary."; \
-	else \
-		echo "UPX not found. Skipping compression."; \
-	fi
 	cd /usr && cp -r --parents -L --no-preserve=mode -r share/glib-2.0/schemas/gschemas.compiled share/X11 share/gtk-4.0 share/icons/Adwaita $(ABS_TARBALLDIR)
 	cd -
 	rm -rf $(TARBALLDIR)/share/gtk-4.0/emoji || true
