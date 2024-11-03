@@ -245,13 +245,6 @@ tarball: ## build self contained Tarball that auto updates
 	cp ./windows/portable.txt $(TARBALLDIR)
 	$(call copy_deps,$(TARBALLDIR)/bin/$(TARGET),$(TBLIBSDIR))
 	$(call make_wrapper_script,$(TARBALLDIR))
-	@if command -v shc > /dev/null; then \
-		echo "shc found. Turning wrapper script into binary"; \
-		CFLAGS="-static" shc -r -S -f $(TARBALLDIR)/$(TARGET) -o $(TARBALLDIR)/$(TARGET) || echo "There's no point in running shc if it's not statically compiled, thus requiring dependencies install glibc-devel or equivalent!!!"; \
-		rm $(TARBALLDIR)/*.x.c ./*.x.c || true; \
-	else \
-		echo "shc not found. Skipping making a blessed wrapper binary."; \
-	fi
 	@if command -v upx > /dev/null; then \
 		echo "UPX found. Compressing binaries..."; \
 		upx --best --lzma -v $(TARBALLDIR)/bin/$(TARGET) || echo "Failed to compress $(TARGET) binary."; \
