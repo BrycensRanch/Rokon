@@ -91,15 +91,11 @@ jobs:
           env: |
             CC: "clang"
             CXX: "clang++"
-          setup: |
-            mkdir -p "${PWD}/artifacts"
-            git config --global --add safe.directory '*'
-            rm -rf /root/go/pkg/mod/cache/vcs || true
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           install: |
-            dnf install -y clang git gtk4-devel gobject-introspection-devel go wget shc
+            dnf install -y clang gtk4-devel gobject-introspection-devel go wget shc
+            dnf remove -y git
           run: |
-            git config --global --add safe.directory '*'
             make run
             make tarball
             make NOTB=1 TARBALLDIR=./AppDir TBPKGFMT=AppImage tarball
@@ -178,21 +174,16 @@ jobs:
       - name: Build armhf on Mageia Cauldron
         uses: uraimo/run-on-arch-action@v2
         with:
-          arch: none
-          distro: none
-          dockerRunArgs: --platform linux/arm
-          base_image: docker.io/mageia:cauldron
+          arch: armv7
+          distro: ubuntu_latest
           env: |
             CC: "clang"
             CXX: "clang++"
-          setup: |
-            mkdir -p "${PWD}/artifacts"
-            git config --global --add safe.directory '*'
-            rm -rf /root/go/pkg/mod/cache/vcs || true
           #githubToken: ${{ secrets.GITHUB_TOKEN }}
           install: |
             dnf in -y dnf5
             dnf5 install -y clang git gtk4-devel gobject-introspection-devel go wget shc
+            dnf5 remove -y git
           run: |
             git config --global --add safe.directory '*'
             make run
@@ -280,7 +271,6 @@ jobs:
             CC: "clang"
             CXX: "clang++"
           setup: |
-            mkdir -p "${PWD}/artifacts"
             git config --global --add safe.directory /home/runner/work/Rokon/Rokon
             rm -rf /root/go/pkg/mod/cache/vcs || true
           githubToken: ${{ secrets.GITHUB_TOKEN }}
