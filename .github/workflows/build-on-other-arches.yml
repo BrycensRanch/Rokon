@@ -171,7 +171,7 @@ jobs:
           tmpfs_size: 5
           swap_size: 4
           swap_location: '/mnt/swapfile'
-      - name: Build armhf on Mageia Cauldron
+      - name: Build armhf on Latest Ubuntu Release
         uses: uraimo/run-on-arch-action@v2
         with:
           arch: armv7
@@ -184,7 +184,7 @@ jobs:
             apt update
             apt full-upgrade -y
             apt install -y libgtk-4-dev libgirepository1.0-dev software-properties-common make clang
-            apt add-apt-repository ppa:longsleep/golang-backports
+            add-apt-repository ppa:longsleep/golang-backports
             apt install -y golang-go
           run: |
             make run
