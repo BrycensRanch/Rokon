@@ -448,6 +448,45 @@ jobs:
       #     signingPassword: ${{ secrets.PASSPHRASE }}
       #     GH_URL: 'https://api.github.com/'
       #     HUSKY: 0
+  test-artifacts:
+    runs-on: [self-hosted, docker]
+    strategy:
+      matrix:
+        os: [ubuntu:22.04, mageia:latest, centos:latest, opensuse/leap:latest, debian:stable-slim, archlinux:latest, fedora:40]
+
+    container:
+      image: ${{ matrix.os }}
+      options: >-
+        --privileged  # Required for FUSE
+        --cap-add=SYS_ADMIN  # Allow FUSE to run
+        --cap-add=SYS_PTRACE  # For tracing (if necessary)
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - uses: actions/download-artifact@v4
+      with:
+        path: .
+        merge-multiple: true
+
+    - name: Run binary tests
+      run: |
+        # Find the binary to run
+        if [ -f ./artifacts/*.run ]; then
+          BINARY=$(ls ./artifacts/*.run)
+        elif [ -f ./artifacts/*.AppImage ]; then
+          BINARY=$(ls ./artifacts/*.AppImage)
+        else
+          echo "No valid binaries found."
+          exit 1
+        fi
+
+        # Run the binary
+        echo "Running binary: $BINARY"
+        ./$BINARY --version
   windows:
     runs-on: windows-latest
     timeout-minutes: 45
