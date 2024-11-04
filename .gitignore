@@ -35,6 +35,10 @@ dmg/
 *.run*
 ./shellc*
 
+remote.go
+changelog_reader.go
+http_client.go
+
 *.log
 *.zip
 *.msi

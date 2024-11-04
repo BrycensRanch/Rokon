@@ -161,7 +161,7 @@ jobs:
           fetch-depth: 0
       - name: Install Required System Packages
         run: |
-          sudo dnf update -y
+          sudo dnf up -y --allowerasing
           sudo dnf copr enable @go-sig/golang-rawhide -y
           sudo dnf install -y git golang gtk4-devel gobject-introspection-devel go-vendor-tools @development-tools clang @development-libs @c-development flatpak flatpak-builder fedora-packager fedora-review @rpm-development-tools go-rpm-macros yq
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
@@ -368,16 +368,21 @@ jobs:
         uses: snapcore/action-build@v1
         if: ${{ github.event_name == 'pull_request' }}
         id: snapcraft_build
-      # - name: Test Installing Snap
-      #   run: sudo snap install ${{ steps.snapcraft_build.outputs.snap }} --dangerous
-      # - name: Test Installed Snap
-      #   run: rokon --version
-      # - uses: snapcore/action-publish@v1
-      #   env:
-      #     SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_LOGIN }}
-      #   with:
-      #     snap: ${{ steps.snapcraft_build.outputs.snap }}
-      #     release: edge/${{ steps.sanitized_branch.sanitized_branch }}
+      - name: Test Installing Snap
+        if: ${{ github.event_name == 'pull_request' }}
+        run: sudo snap install ${{ steps.snapcraft_build.outputs.snap }} --dangerous
+      - name: Test Installed Snap'
+        if: ${{ github.event_name == 'pull_request' }}
+        run: rokon --version
+      - uses: snapcore/action-publish@v1
+        if: ${{ github.event_name == 'pull_request' }}
+        # When external PRs try to run this, it will fail because they don't have Snapcraft Login Credentials
+        continue-on-error: true
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_LOGIN_CREDENTIALS }}
+        with:
+          snap: ${{ steps.snapcraft_build.outputs.snap }}
+          release: edge/${{ steps.sanitized_branch.sanitized_branch }}
       - name: 🗃️ Upload Snap
         uses: actions/upload-artifact@v4
         if: always() && github.event_name == 'pull_request'
