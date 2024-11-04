@@ -476,9 +476,9 @@ jobs:
       run: |
         # Find the binary to run
         if [ -f ./artifacts/*.run ]; then
-          BINARY=$(ls ./artifacts/*.run)
+          BINARY=$(ls ./*.run)
         elif [ -f ./artifacts/*.AppImage ]; then
-          BINARY=$(ls ./artifacts/*.AppImage)
+          BINARY=$(ls ./*.AppImage)
         else
           echo "No valid binaries found."
           exit 1
