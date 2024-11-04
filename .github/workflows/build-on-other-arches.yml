@@ -179,13 +179,14 @@ jobs:
           env: |
             CC: "clang"
             CXX: "clang++"
-          #githubToken: ${{ secrets.GITHUB_TOKEN }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
           install: |
-            dnf in -y dnf5
-            dnf5 install -y clang git gtk4-devel gobject-introspection-devel go wget shc
-            dnf5 remove -y git
+            apt update
+            apt full-upgrade -y
+            apt install -y libgtk-4-dev libgirepository1.0-dev software-properties-common make clang
+            apt add-apt-repository ppa:longsleep/golang-backports
+            apt install -y golang-go
           run: |
-            git config --global --add safe.directory '*'
             make run
             make tarball
             make NOTB=1 TARBALLDIR=./AppDir TBPKGFMT=AppImage tarball
