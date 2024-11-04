@@ -450,6 +450,7 @@ jobs:
       #     HUSKY: 0
   test-artifacts:
     runs-on: [self-hosted, docker]
+    needs: [archlinux, fedora]
     strategy:
       matrix:
         os:
@@ -465,7 +466,7 @@ jobs:
       options: >-
         --privileged
         --cap-add=SYS_ADMIN
-        --cap-add=SYS_PTRACE 
+        --cap-add=SYS_PTRACE
 
     steps:
       - name: Checkout repository
