@@ -328,7 +328,8 @@ jobs:
         run: |
           sudo apt update
           sudo add-apt-repository ppa:longsleep/golang-backports -y
-          sudo apt install -y libgtk-4-dev libgirepository1.0-dev build-essential devscripts debhelper dh-make golang dput yq
+          sudo apt install -y libgtk-4-dev libgirepository1.0-dev build-essential devscripts debhelper dh-make golang dput
+          sudo snap install yq 
       - name: Install Snapcraft
         if: ${{ github.event_name == 'pull_request' }}
         uses: samuelmeuli/action-snapcraft@v2
