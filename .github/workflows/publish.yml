@@ -463,9 +463,9 @@ jobs:
     container:
       image: ${{ matrix.os }}
       options: >-
-        --privileged  # Required for FUSE
-        --cap-add=SYS_ADMIN  # Allow FUSE to run
-        --cap-add=SYS_PTRACE  # For tracing (if necessary)
+        --privileged
+        --cap-add=SYS_ADMIN
+        --cap-add=SYS_PTRACE 
 
     steps:
       - name: Checkout repository
