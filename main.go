@@ -109,6 +109,8 @@ var (
 	telemetryOnByDefault = "true"
 	commit               = "unknown"
 	branch               = "unknown"
+	logFilePath = filepath.Join(xdg.DataHome, "rokon", "latest.log")
+	tempDir = filepath.Join(xdg.CacheHome, "rokon")
 )
 
 func main() {
@@ -117,11 +119,11 @@ func main() {
 	case "windows", "darwin":
 		fmt.Println("Running on Windows or macOS.")
 		// Use GLib to set the GTK_CSD environment variable for Client-Side Decorations
-		glib.Setenv("GTK_CSD", "1", true)
-		os.Setenv("GTK_CSD", "1")
+		glib.Setenv("GTK_CSD", "0", true)
+		os.Setenv("GTK_CSD", "0")
 	default:
 	}
-	app := gtk.NewApplication("io.github.brycensranch.Rokon", gio.ApplicationDefaultFlags)
+	app := gtk.NewApplication("io.github.brycensranch.Rokon", gio.ApplicationFlagsNone)
 	aptabaseClient = aptabase.NewClient("A-US-0332858461", version, uint64(133), true, "")
 	if version != "" {
 		app.SetVersion(version)
@@ -471,7 +473,6 @@ func showDialog(title, message string, app *gtk.Application) {
 }
 
 func fetchImageAsPaintable(url string) (string, error) {
-	tempDir := filepath.Join(xdg.CacheHome, "rokon")
 	client := resty.New()
 	resp, err := client.SetOutputDirectory(tempDir).EnableTrace().R().
 		// SetDebug(true).
