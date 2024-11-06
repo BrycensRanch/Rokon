@@ -115,6 +115,11 @@ var (
 )
 
 func main() {
+	err := os.MkdirAll(filepath.Dir(logFilePath), 0755)
+	if err != nil {
+		fmt.Println("Error creating directory:", err)
+		return
+	}
 	// Open a log file (in append mode).
 	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
