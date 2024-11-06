@@ -5,12 +5,12 @@ FROM fedora:rawhide
 
 # Install the necessary packages
 
-RUN dnf install -y golang gtk4-devel gobject-introspection-devel git @development-tools @development-libs flatpak-builder apt-get python3-pip && dnf clean all -y
+RUN dnf install -y golang gtk4-devel gobject-introspection-devel git @development-tools @development-libs flatpak-builder apt-get python3-pip sudo starship && dnf clean all -y
 
 # AppImage Builder dependencies
-RUN sudo dnf install -y binutils coreutils desktop-file-utils fakeroot fuse patchelf python3-pip python3-setuptools squashfs-tools strace util-linux zsync
+RUN dnf install -y binutils coreutils desktop-file-utils fakeroot fuse patchelf python3-pip python3-setuptools squashfs-tools strace util-linux zsync
 
-RUN sudo pip3 install appimage-builder --break-system-packages
+RUN pip3 install appimage-builder --break-system-packages
 
 # Set the working directory
 
@@ -19,6 +19,8 @@ RUN echo "dev ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/dev
 # add them to the wheel and sudo groups
 RUN usermod -aG wheel dev
 RUN usermod -aG sudo dev
+
+RUN echo 'eval "$(starship init bash)"' >> /home/dev/.bashrc
 
 USER dev
 
