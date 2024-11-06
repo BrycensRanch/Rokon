@@ -1,10 +1,54 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 {
 	"name": "Rokon Development",
-  "build": { "dockerfile": "Dockerfile" },
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"containerUser": "dev",
+	"runArgs": [
+		"--cap-add=SYS_ADMIN", // Adds SYS_ADMIN capability for FUSE
+		"--device=/dev/fuse", // Grants access to FUSE device
+		"--security-opt",
+		"seccomp=unconfined", // Disables seccomp (optional)
+		"--security-opt",
+		"apparmor=unconfined", // Disable AppArmor (unconfined profile)
+		"--group-add",
+		"17",
+		"--group-add",
+		"26",
+		"--group-add",
+		"303",
+		"--security-opt",
+		"label=disable" // Disable SELinux enforcing
+	],
+	"mounts": [
+		"source=$XAUTHORITY,target=$XAUTHORITY,type=bind,readonly",
+		"source=$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY,target=/tmp/$WAYLAND_DISPLAY,type=bind",
+		"source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+		"source=/dev/dri,target=/dev/dri,type=bind",
+		"source=/dev/snd,target=/dev/snd,type=bind",
+		"source=/etc/asound.conf,target=/etc/asound.conf,type=bind"
+	],
+	"containerEnv": {
+		"XDG_RUNTIME_DIR": "/tmp",
+		"WAYLAND_DISPLAY": "$WAYLAND_DISPLAY",
+		"DISPLAY": "$DISPLAY",
+		"XDG_SESSION_TYPE": "$XDG_SESSION_TYPE"
+	},
 	"customizations": {
 		"vscode": {
-			"extensions": ["golang.Go", "davidanson.vscode-markdownlint", "ms-azuretools.vscode-docker", "vivaxy.vscode-conventional-commits", "rangav.vscode-thunder-client", "rangav.code-thunder-client", "ms-vscode.makefile-tools"]
+			"extensions": [
+				"golang.Go",
+				"davidanson.vscode-markdownlint",
+				"ms-azuretools.vscode-docker",
+				"vivaxy.vscode-conventional-commits",
+				"rangav.vscode-thunder-client",
+				"rangav.code-thunder-client",
+				"ms-vscode.makefile-tools"
+			]
 		}
+	},
+	"features": {
+		"docker-in-docker": "latest"
 	}
 }
