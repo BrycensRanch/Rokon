@@ -4,6 +4,7 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -109,15 +110,36 @@ var (
 	telemetryOnByDefault = "true"
 	commit               = "unknown"
 	branch               = "unknown"
-	logFilePath = filepath.Join(xdg.DataHome, "rokon", "latest.log")
+	logFilePath = filepath.Join(xdg.DataHome, "rokon", "logs", "latest.log")
 	tempDir = filepath.Join(xdg.CacheHome, "rokon")
 )
 
 func main() {
+	// Open a log file (in append mode).
+	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		fmt.Println("Error opening rokon log file:", err)
+		return
+	}
+	defer logFile.Close()
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+
+	// Set the logger to output to the file
+	log.SetOutput(multiWriter)
+
+	// You can also customize the logger with a prefix and timestamp
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	// Create a new logger that writes to the file.
+	customLogger := log.New(logFile, "SSDP: ", log.Ldate|log.Ltime|log.Lshortfile)
+
+	// Assign the custom logger to the SSDP.Logger field.
+	ssdp.Logger = customLogger
+	telemetryLogger := log.New(logFile, "TELEMETRY: ", log.Ldate|log.Ltime|log.Lshortfile)
+	log.Printf("Log file: %s", logFilePath)
 	fmt.Println("Starting Rokon. Now with more telemetry!")
 	switch runtime.GOOS {
 	case "windows", "darwin":
-		fmt.Println("Running on Windows or macOS.")
+		telemetryLogger.Println("Running on Windows or macOS.")
 		// Use GLib to set the GTK_CSD environment variable for Client-Side Decorations
 		glib.Setenv("GTK_CSD", "0", true)
 		os.Setenv("GTK_CSD", "0")
@@ -128,7 +150,7 @@ func main() {
 	if version != "" {
 		app.SetVersion(version)
 	}
-	fmt.Printf("Version %s commit %s branch %s\n", version, commit, branch)
+	log.Printf("Version %s commit %s branch %s\n", version, commit, branch)
 	switch runtime.GOOS {
 	case "linux":
 		release := getOSRelease()
@@ -141,7 +163,7 @@ func main() {
 			kdeSessionVersion = os.Getenv("KDE_SESSION_VERSION")
 		}
 
-		log.Printf("Running on Linux. Specifically: %s %s with %s %s %s and %s\n",
+		telemetryLogger.Printf("Running on Linux. Specifically: %s %s with %s %s %s and %s\n",
 			release, arch, desktop, os.Getenv("DESKTOP_SESSION"), kdeSessionVersion, sessionType)
 
 		createEvent("linux_run", map[string]interface{}{
@@ -154,23 +176,23 @@ func main() {
 
 		container := os.Getenv("container")
 		if container != "" && container == "flatpak" {
-			log.Println("Running from a Flatpak")
+			telemetryLogger.Println("Running from a Flatpak")
 			createEvent("flatpak_run", map[string]interface{}{
 				"flatpak":        container,
 				"flatpakVersion": version, // Replace with your app version logic
 			})
 		} else if snap := os.Getenv("SNAP"); snap != "" {
-			log.Println("Running from a Snap")
+			telemetryLogger.Println("Running from a Snap")
 			createEvent("snap_run", map[string]interface{}{
 				"snap":        snap,
 				"snapVersion": version, // Replace with your app version logic
 			})
 		} else if appImage := os.Getenv("APPIMAGE"); appImage != "" {
-			log.Println("Running from an AppImage")
+			telemetryLogger.Println("Running from an AppImage")
 			firejail := isRunningWithFirejail()
 
 			if firejail {
-				log.Println("Running from an AppImage with firejail")
+				telemetryLogger.Println("Running from an AppImage with firejail")
 				// Adjust telemetry or other settings as needed.
 			}
 
@@ -183,7 +205,7 @@ func main() {
 				"desktopIntegration": os.Getenv("DESKTOPINTEGRATION"),
 			})
 		} else if isPackaged == "true" {
-			log.Println("Running from a native package")
+			telemetryLogger.Println("Running from a native package")
 			createEvent("native_run", map[string]interface{}{
 				"nativeVersion": version, // Replace with your app version logic
 				"path":          path.Base(os.Args[0]),
@@ -193,11 +215,11 @@ func main() {
 	case "windows":
 		release := getOSRelease()
 		arch := runtime.GOARCH
-		log.Printf("Running on Windows. Specifically: %s %s\n",
+		telemetryLogger.Printf("Running on Windows. Specifically: %s %s\n",
 			release, arch)
 
 		if packageFormat == "portable" {
-			log.Println("Running from a portable executable")
+			telemetryLogger.Println("Running from a portable executable")
 		}
 
 		createEvent("windows_run", map[string]interface{}{
@@ -208,7 +230,7 @@ func main() {
 	case "darwin":
 		release := getOSRelease()
 		arch := runtime.GOARCH
-		log.Printf("Running on macOS. Specifically: %s %s\n",
+		telemetryLogger.Printf("Running on macOS. Specifically: %s %s\n",
 			release, arch)
 
 		createEvent("macos_run", map[string]interface{}{
@@ -219,7 +241,7 @@ func main() {
 			"packageFormat": packageFormat,
 		})
 	default:
-		log.Printf("Unsupported telemetry platform: %s %s %s. However, the application will continue.\n",
+		telemetryLogger.Printf("Unsupported telemetry platform: %s %s %s. However, the application will continue.\n",
 			runtime.GOOS, getOSRelease(), runtime.GOARCH)
 		createEvent("unsupported_platform", map[string]interface{}{
 			"platform":      runtime.GOOS,
@@ -487,7 +509,7 @@ func fetchImageAsPaintable(url string) (string, error) {
 		return "", fmt.Errorf("failed to get image: status code %d", resp.StatusCode())
 	}
 	imagePath := filepath.Join(tempDir, "device-image.png")
-	println(imagePath)
+	log.Println(imagePath)
 	// image := gtk.NewImageFromFile(imagePath)
 
 	return imagePath, nil
