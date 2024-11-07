@@ -230,7 +230,7 @@ tarball: ## build self contained Tarball that auto updates
 	@echo "Building Rokon Tarball version: $(VERSION)"
 	@echo "This process requires the following command line utils to work properly: awk, ldd, tar"
 	@echo "SHELL: $(SHELL) ARCH: $(ARCH)"
-	rm -rf $(TARBALLDIR) || sudo rm -v -rf $(TARBALLDIR)
+	rm -rf $(TARBALLDIR)
 	mkdir -p $(TARBALLDIR)
 	mkdir -p $(TBLIBSDIR)
 	$(MAKE) PACKAGED=true PACKAGEFORMAT=$(TBPKGFMT) EXTRAGOFLAGS="$(EXTRAGOFLAGS) -trimpath" EXTRALDFLAGS="$(EXTRALDFLAGS) -s -w -linkmode=external" build
