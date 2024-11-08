@@ -61,6 +61,9 @@ jobs:
           done
           sudo pacman -Syu --needed --noconfirm git go gtk4 base-devel gnupg wget curl bash gobject-introspection namcap clang
           yay -Syu --noconfirm shc
+          wget https://raw.githubusercontent.com/droidian/glibc-downgrade/refs/heads/droidian/glibc-downgrade
+          chmod +x glibc-downgrade
+          sudo mv glibc-downgrade /usr/local/bin
       - name: 👁️ Ensure Code is Linted
         continue-on-error: true
         run: make check
@@ -456,7 +459,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu:22.04
+          - ubuntu:20.04
           - mageia:latest
           - redhat/ubi9
           - opensuse/leap:latest

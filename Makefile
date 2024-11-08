@@ -288,6 +288,10 @@ run: ## create run "package"
 	$(MAKE) PACKAGED=true PACKAGEFORMAT="run" TBPKGFMT="run" TARBALLDIR=$(RUNDIR) NOTB=1 tarball
 	cp $(RUNDIR)/$(TARGET) $(RUNDIR)/selfextract_startup
 	$(SELFEXTRACT) -f $(RUNFILE_NAME) -C $(RUNDIR) .
+	@command -v glibc-downgrade > /dev/null 2>&1 && \
+	echo "Running glibc-downgrade on $(RUNFILE_NAME)" && \
+	glibc-downgrade 2.31 $(RUNFILE_NAME) || \
+	echo "glibc-downgrade not found, skipping downgrading"
 	@if [ "$(SANITYCHECK)" == "1" ]; then \
 		./$(RUNFILE_NAME) --version; \
 		status=$$?; \
