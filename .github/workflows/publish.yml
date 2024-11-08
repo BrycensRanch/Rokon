@@ -152,9 +152,6 @@ jobs:
   fedora:
     timeout-minutes: 125
     runs-on: [self-hosted, fedora]
-    container:
-      image: fedora:40
-      options: --privileged --device /dev/fuse
     steps:
       - name: Cleanup directory
         run: sudo rm -rf $GITHUB_WORKSPACE/* || true
