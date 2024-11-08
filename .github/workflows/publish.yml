@@ -453,13 +453,14 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [archlinux, fedora]
     strategy:
+      fail-fast: false
       matrix:
         os:
           - ubuntu:22.04
           - mageia:latest
           - centos:latest
           - opensuse/leap:latest
-          - debian:stable-slim
+          - debian:latest
           - archlinux:latest
           - fedora:40
     container:
@@ -470,10 +471,6 @@ jobs:
         --cap-add=SYS_PTRACE
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - uses: actions/download-artifact@v4
         with:
