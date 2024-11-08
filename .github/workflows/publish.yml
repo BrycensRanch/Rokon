@@ -17,10 +17,11 @@ on:
 jobs:
   docker:
     timeout-minutes: 125
-    runs-on: [self-hosted, docker]
+    # runs-on: [self-hosted, docker]
+    runs-on: ubuntu-24.04
     steps:
-      - name: Cleanup directory
-        run: sudo rm -rf $GITHUB_WORKSPACE/* || true
+      # - name: Cleanup directory
+      #   run: sudo rm -rf $GITHUB_WORKSPACE/* || true
       - name: Check out current repository
         uses: actions/checkout@v4
         with:
@@ -38,13 +39,17 @@ jobs:
           cache-to: type=gha,mode=max
   archlinux:
     timeout-minutes: 125
-    runs-on: [self-hosted, archlinux]
+    # runs-on: [self-hosted, archlinux]
+    runs-on: ubuntu-24.04
+    container:
+      image: fedora:40
+      options: --privileged --device /dev/fuse
     env:
       CC: clang
       CXX: clang++
     steps:
-      - name: Cleanup directory
-        run: sudo rm -rf $GITHUB_WORKSPACE/* || true
+      # - name: Cleanup directory
+      #   run: sudo rm -rf $GITHUB_WORKSPACE/* || true
       - name: Check out current repository
         uses: actions/checkout@v4
         with:
@@ -151,10 +156,14 @@ jobs:
           repo: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
   fedora:
     timeout-minutes: 125
-    runs-on: [self-hosted, fedora]
+    # runs-on: [self-hosted, fedora]
+    runs-on: ubuntu-24.04
+    container:
+      image: fedora:40
+      options: --privileged --device /dev/fuse
     steps:
-      - name: Cleanup directory
-        run: sudo rm -rf $GITHUB_WORKSPACE/* || true
+      # - name: Cleanup directory
+      #   run: sudo rm -rf $GITHUB_WORKSPACE/* || true
       - name: Check out current repository
         uses: actions/checkout@v4
         with:
@@ -315,11 +324,12 @@ jobs:
           - amd64
           # - arm64
 
-    runs-on: [self-hosted, ubuntu]
+    # runs-on: [self-hosted, ubuntu]
+    runs-on: ubuntu-24.04
 
     steps:
-      - name: Cleanup directory
-        run: sudo rm -rf $GITHUB_WORKSPACE/* || true
+      # - name: Cleanup directory
+      #   run: sudo rm -rf $GITHUB_WORKSPACE/* || true
       - name: Check out current repository
         uses: actions/checkout@v4
         with:
@@ -449,7 +459,8 @@ jobs:
       #     GH_URL: 'https://api.github.com/'
       #     HUSKY: 0
   test-artifacts:
-    runs-on: [self-hosted, docker]
+    # runs-on: [self-hosted, docker]
+    runs-on: ubuntu-24.04
     needs: [archlinux, fedora]
     strategy:
       matrix:
