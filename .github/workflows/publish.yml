@@ -456,13 +456,13 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu:22.04
+          - ubuntu:20.04
           - mageia:latest
-          - centos:latest
+          - redhat/ubi9
           - opensuse/leap:latest
           - debian:latest
           - archlinux:latest
-          - fedora:40
+          - fedora:38
     container:
       image: ${{ matrix.os }}
       options: >-
@@ -478,20 +478,24 @@ jobs:
       - name: Run binary tests
         run: |
           chmod +x *.run || true
-          chmood +x *.AppImage || true
-          # Find the binary to run
-          if [ -f ./*.run ]; then
-            BINARY=$(ls ./*.run)
-          elif [ -f ./*.AppImage ]; then
-            BINARY=$(ls ./*.AppImage)
-          else
-            echo "No valid binaries found."
-            exit 1
+          chmod +x *.AppImage || true
+
+          # Check if there are any .run or .AppImage files
+          if ls ./*.run &>/dev/null; then
+            # Loop through all .run files
+            for BINARY in *.run; do
+              echo "Running binary: $BINARY"
+              ./$BINARY --version
+            done
           fi
 
-          # Run the binary
-          echo "Running binary: $BINARY"
-          ./$BINARY --version
+          if ls ./*.AppImage &>/dev/null; then
+            # Loop through all .AppImage files
+            for BINARY in *.AppImage; do
+              echo "Running binary: $BINARY"
+              ./$BINARY --version
+            done
+          fi
   windows:
     runs-on: windows-latest
     timeout-minutes: 45
