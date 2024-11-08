@@ -328,8 +328,8 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      # - name: Cleanup directory
-      #   run: sudo rm -rf $GITHUB_WORKSPACE/* || true
+      - name: Cleanup directory
+        run: sudo rm -rf $GITHUB_WORKSPACE/* || true
       - name: Check out current repository
         uses: actions/checkout@v4
         with:
