@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -46,7 +45,7 @@ func main() {
 		txtFilePath := filepath.Join(outputDir, txtFileName)          // Combine the output directory and file name
 
 		// Write the plain text to the new .txt file
-		if err := ioutil.WriteFile(txtFilePath, []byte(output), 0o644); err != nil {
+		if err := os.WriteFile(txtFilePath, []byte(output), 0o644); err != nil {
 			log.Printf("Failed to write to file %s: %v", txtFilePath, err)
 			continue
 		}

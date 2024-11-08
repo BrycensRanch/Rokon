@@ -62,7 +62,7 @@ func fetchImage(src string, rootDir string) ([]byte, error) {
 			return nil, err
 		}
 		defer resp.Body.Close()
-		return ioutil.ReadAll(body)
+		return io.ReadAll(body)
 	} else {
 		// Handle local image paths
 		localImagePath := filepath.Join(rootDir, src)
@@ -78,7 +78,7 @@ func decompressGzip(data []byte) ([]byte, error) {
 	}
 	defer reader.Close()
 
-	return ioutil.ReadAll(reader)
+	return io.ReadAll(reader)
 }
 
 // Convert image bytes to PNG if necessary and add it to the RTF document
