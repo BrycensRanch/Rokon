@@ -480,9 +480,9 @@ jobs:
       - name: Run binary tests
         run: |
           # Find the binary to run
-          if [ -f ./artifacts/*.run ]; then
+          if [ -f ./*.run ]; then
             BINARY=$(ls ./*.run)
-          elif [ -f ./artifacts/*.AppImage ]; then
+          elif [ -f ./*.AppImage ]; then
             BINARY=$(ls ./*.AppImage)
           else
             echo "No valid binaries found."
