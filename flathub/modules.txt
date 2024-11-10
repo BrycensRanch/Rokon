@@ -9,7 +9,7 @@ github.com/adrg/xdg/internal/userdirs
 # github.com/benesch/cgosymbolizer v0.0.0-20190515212042-bec6fe6e597b
 ## explicit
 github.com/benesch/cgosymbolizer
-# github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110145505-89f01f98de55
+# github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110150153-bfe02ddfffce
 ## explicit; go 1.22.0
 github.com/brycensranch/go-aptabase/pkg/aptabase/v1
 github.com/brycensranch/go-aptabase/pkg/device/v1
