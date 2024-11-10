@@ -287,7 +287,7 @@ run: ## create run "package"
 	rm $(RUNFILE_NAME) || true
 	$(MAKE) PACKAGED=true PACKAGEFORMAT="run" TBPKGFMT="run" TARBALLDIR=$(RUNDIR) NOTB=1 tarball
 	cp $(RUNDIR)/$(TARGET) $(RUNDIR)/selfextract_startup
-	$(SELFEXTRACT) -f $(RUNFILE_NAME) -C $(RUNDIR) .
+	CGO_ENABLED=0 $(SELFEXTRACT) -v -f $(RUNFILE_NAME) -C $(RUNDIR) .
 	@if [ "$(SANITYCHECK)" == "1" ]; then \
 		./$(RUNFILE_NAME) --version; \
 		status=$$?; \
