@@ -141,7 +141,7 @@ func main() {
 	ssdp.Logger = customLogger
 	telemetryLogger := log.New(logFile, "TELEMETRY: ", log.Ldate|log.Ltime|log.Lshortfile)
 	log.Printf("Log file: %s", logFilePath)
-	fmt.Println("Starting Rokon. Now with more telemetry!")
+	log.Println("Starting Rokon. Now with more telemetry!")
 	switch runtime.GOOS {
 	case "windows", "darwin":
 		telemetryLogger.Println("Running on Windows or macOS.")
@@ -151,7 +151,8 @@ func main() {
 	default:
 	}
 	app := gtk.NewApplication("io.github.brycensranch.Rokon", gio.ApplicationFlagsNone)
-	aptabaseClient = aptabase.NewClient("A-US-0332858461", version, uint64(133), true, "")
+	aptabaseClient = aptabase.NewClient("A-US-0332858461", version, uint64(133), false, "")
+	aptabaseClient.Logger = telemetryLogger
 	if version != "" {
 		app.SetVersion(version)
 	}

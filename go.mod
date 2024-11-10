@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/adrg/xdg v0.5.3
 	github.com/benesch/cgosymbolizer v0.0.0-20190515212042-bec6fe6e597b
-	github.com/brycensranch/go-aptabase/pkg v0.0.0-20241004152612-e20856549654
+	github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110142406-7507f6a87a22
 	github.com/diamondburned/gotk4/pkg v0.3.1
 	github.com/go-resty/resty/v2 v2.15.3
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20241025222116-6b205f073fdd
@@ -20,8 +20,8 @@ require (
 require (
 	github.com/KarpelesLab/weak v0.1.1 // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20231121144256-b99613f794b6 // indirect
-	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
-	golang.org/x/net v0.30.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f // indirect
+	golang.org/x/net v0.31.0 // indirect
+	golang.org/x/sync v0.9.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
 )
