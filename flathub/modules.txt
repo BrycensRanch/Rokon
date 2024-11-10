@@ -9,7 +9,7 @@ github.com/adrg/xdg/internal/userdirs
 # github.com/benesch/cgosymbolizer v0.0.0-20190515212042-bec6fe6e597b
 ## explicit
 github.com/benesch/cgosymbolizer
-# github.com/brycensranch/go-aptabase/pkg v0.0.0-20241004152612-e20856549654
+# github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110145505-89f01f98de55
 ## explicit; go 1.22.0
 github.com/brycensranch/go-aptabase/pkg/aptabase/v1
 github.com/brycensranch/go-aptabase/pkg/device/v1
@@ -55,20 +55,20 @@ github.com/koron/go-ssdp/internal/ssdplog
 # go4.org/unsafe/assume-no-moving-gc v0.0.0-20231121144256-b99613f794b6
 ## explicit; go 1.11
 go4.org/unsafe/assume-no-moving-gc
-# golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
+# golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
 ## explicit; go 1.22.0
 golang.org/x/exp/rand
-# golang.org/x/net v0.30.0
+# golang.org/x/net v0.31.0
 ## explicit; go 1.18
 golang.org/x/net/bpf
 golang.org/x/net/internal/iana
 golang.org/x/net/internal/socket
 golang.org/x/net/ipv4
 golang.org/x/net/publicsuffix
-# golang.org/x/sync v0.8.0
+# golang.org/x/sync v0.9.0
 ## explicit; go 1.18
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.26.0
+# golang.org/x/sys v0.27.0
 ## explicit; go 1.18
 golang.org/x/sys/unix
 golang.org/x/sys/windows
