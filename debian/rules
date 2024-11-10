@@ -9,6 +9,8 @@ export DH_VERBOSE=1
 
 # Override the build step to use your Makefile
 override_dh_auto_build:
+	go env -w CC=clang
+	go env -w CXX=clang++
 	# Call your Makefile's build target
 	dh_auto_build -- EXTRAGOFLAGS="-trimpath -buildmode=pie" EXTRALDFLAGS="-compressdwarf=false -linkmode=external" PACKAGED=true PACKAGEFORMAT=deb
 
