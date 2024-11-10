@@ -8,6 +8,8 @@ github.com/brycensranch/go-aptabase/pkg v0.0.0-20241004152612-e20856549654 h1:nl
 github.com/brycensranch/go-aptabase/pkg v0.0.0-20241004152612-e20856549654/go.mod h1:+CLh6qvqShXtx96GWizVY1D2mtk/or2TET+uirQR0Rk=
 github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110142406-7507f6a87a22 h1:Ry/STI+ymwvlXFg4Exi4u/GVPeDeeranEZ9pt5bd3VY=
 github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110142406-7507f6a87a22/go.mod h1:+CLh6qvqShXtx96GWizVY1D2mtk/or2TET+uirQR0Rk=
+github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110145505-89f01f98de55 h1:Y6tStMEa+3LmyKbGIVWAXD9eHrGHZTJZbi12z9/gl98=
+github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110145505-89f01f98de55/go.mod h1:+CLh6qvqShXtx96GWizVY1D2mtk/or2TET+uirQR0Rk=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/diamondburned/gotk4/pkg v0.3.1 h1:uhkXSUPUsCyz3yujdvl7DSN8jiLS2BgNTQE95hk6ygg=
