@@ -6,6 +6,8 @@ github.com/benesch/cgosymbolizer v0.0.0-20190515212042-bec6fe6e597b h1:5JgaFtHFR
 github.com/benesch/cgosymbolizer v0.0.0-20190515212042-bec6fe6e597b/go.mod h1:eMD2XUcPsHYbakFEocKrWZp47G0MRJYoC60qFblGjpA=
 github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110145505-89f01f98de55 h1:Y6tStMEa+3LmyKbGIVWAXD9eHrGHZTJZbi12z9/gl98=
 github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110145505-89f01f98de55/go.mod h1:+CLh6qvqShXtx96GWizVY1D2mtk/or2TET+uirQR0Rk=
+github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110150153-bfe02ddfffce h1:9OOSlKtlfLIBLZjnEO6mRWhTUuG3OwWjo41/Bbv5yB8=
+github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110150153-bfe02ddfffce/go.mod h1:+CLh6qvqShXtx96GWizVY1D2mtk/or2TET+uirQR0Rk=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/diamondburned/gotk4/pkg v0.3.1 h1:uhkXSUPUsCyz3yujdvl7DSN8jiLS2BgNTQE95hk6ygg=
