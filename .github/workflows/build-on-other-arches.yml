@@ -83,18 +83,22 @@ jobs:
           tmpfs_size: 5
           swap_size: 4
           swap_location: '/mnt/swapfile'
-      - name: Build aarch64 on fedora_latest
+      - name: Build aarch64 on ubuntu_latest
         uses: uraimo/run-on-arch-action@v2
         with:
           arch: aarch64
-          distro: fedora_latest
+          distro: ubuntu_latest
           env: |
             CC: "clang"
             CXX: "clang++"
             GITHUB_WORKSPACE: "${{github.workspace}}"
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           install: |
-            dnf install -y clang gtk4-devel gobject-introspection-devel go wget git
+            apt update
+            apt full-upgrade -y
+            apt install -y libgtk-4-dev libgirepository1.0-dev software-properties-common make clang git
+            add-apt-repository ppa:longsleep/golang-backports
+            apt install -y golang-go
           run: |
             chown -R $(whoami):$(whoami) .
             go build -v .
