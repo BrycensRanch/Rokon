@@ -91,10 +91,12 @@ jobs:
           env: |
             CC: "clang"
             CXX: "clang++"
+            GITHUB_WORKSPACE: "${{github.workspace}}"
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           install: |
             dnf install -y clang gtk4-devel gobject-introspection-devel go wget git
           run: |
+            git config --global --add safe.directory $GITHUB_WORKSPACE
             go build -v .
             make run
             make tarball
@@ -179,6 +181,7 @@ jobs:
           env: |
             CC: "clang"
             CXX: "clang++"
+            GITHUB_WORKSPACE: "${{github.workspace}}"
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           install: |
             apt update
@@ -188,6 +191,7 @@ jobs:
             apt install -y golang-go
           run: |
             go build -v .
+            git config --global --add safe.directory $GITHUB_WORKSPACE
             make run
             make tarball
             make NOTB=1 TARBALLDIR=./AppDir TBPKGFMT=AppImage tarball
