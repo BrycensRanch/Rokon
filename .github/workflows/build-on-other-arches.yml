@@ -101,6 +101,7 @@ jobs:
             apt install -y golang-go
           run: |
             chown -R $(whoami):$(whoami) .
+            rm cgosymbolizer_linux.go # breaks builds
             go build -v .
             make run
             make tarball
