@@ -170,6 +170,7 @@ jobs:
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           flatpak remote-add --user --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
           flatpak install --user -y flathub org.flatpak.Builder
+          flatpak update --user -y
       - name: Create RPM build environment
         if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch'
         run: |
