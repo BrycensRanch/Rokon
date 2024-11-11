@@ -7,8 +7,11 @@ FROM debian:testing AS builder
 WORKDIR /app
 COPY . .
 
-# Breaks building on armhf!
-RUN rm cgosymbolizer_linux.go || true
+# Remove architecture specific debug features
+RUN ARCH=$(uname -m) && \
+    if [[ "$ARCH" != "x86_64" && "$ARCH" != "amd64" && "$ARCH" != "aarch64" && "$ARCH" != "arm64" && "$ARCH" != "i386" && "$ARCH" != "i686" ]]; then \
+        rm -f cgosymbolizer_linux.go; \
+    fi
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
