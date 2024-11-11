@@ -96,7 +96,7 @@ jobs:
           install: |
             dnf install -y clang gtk4-devel gobject-introspection-devel go wget git
           run: |
-            git config --global --add safe.directory $GITHUB_WORKSPACE
+            chown -R $(whoami):$(whoami) .
             go build -v .
             make run
             make tarball
@@ -108,7 +108,7 @@ jobs:
             chmod +x mkappimage-*.AppImage
             mv mkappimage-* mkappimage
             sudo mv mkappimage /usr/local/bin
-            sudo chown -R $(whoami) ./AppDir
+            sudo chown -R $(whoami) .
             make TARBALLDIR=./AppDir ARCH=aarch64 basedimage
       - name: 😭 Upload Failed Directories For Debug
         uses: actions/upload-artifact@v4
@@ -190,8 +190,8 @@ jobs:
             add-apt-repository ppa:longsleep/golang-backports
             apt install -y golang-go
           run: |
+            chown -R $(whoami):$(whoami) .
             go build -v .
-            git config --global --add safe.directory $GITHUB_WORKSPACE
             make run
             make tarball
             make NOTB=1 TARBALLDIR=./AppDir TBPKGFMT=AppImage tarball
@@ -202,7 +202,7 @@ jobs:
             chmod +x mkappimage-*.AppImage
             mv mkappimage-* mkappimage
             sudo mv mkappimage /usr/local/bin
-            sudo chown -R $(whoami) ./AppDir
+            sudo chown -R $(whoami) .
             make TARBALLDIR=./AppDir ARCH=armhf basedimage
       - name: 😭 Upload Failed Directories For Debug
         uses: actions/upload-artifact@v4
