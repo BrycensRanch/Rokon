@@ -377,9 +377,11 @@ jobs:
       - name: Test Installing Snap
         if: ${{ github.event_name == 'pull_request' }}
         run: sudo snap install ${{ steps.snapcraft_build.outputs.snap }} --dangerous
-      - name: Test Installed Snap'
+      - name: Test Installed Snap
         if: ${{ github.event_name == 'pull_request' }}
-        run: rokon --version
+        env:
+          SNAPD_DEBUG: 1 # Should help to diagnose snap is not a cgroup error
+        run: sleep 2 && snap run rokon --version
       - uses: snapcore/action-publish@v1
         if: ${{ github.event_name == 'pull_request' }}
         # When external PRs try to run this, it will fail because they don't have Snapcraft Login Credentials
