@@ -59,80 +59,118 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/386, linux/amd64, linux/arm, linux/aarch64, linux/ppc64le,linux/riscv64,linux/s390x
+          platforms: linux/386, linux/amd64, linux/arm, linux/aarch64, linux/ppc64le, linux/riscv64, linux/s390x
           file: multiarch.Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
-  build_aarch64:
-    timeout-minutes: 2000
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Check out current repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Extract tarball from each platform
+        run: |
+          platforms=("linux/386" "linux/amd64" "linux/arm" "linux/aarch64" "linux/ppc64le" "linux/riscv64" "linux/s390x")
 
-      - name: Check if /var/run/docker.sock is mounted
+
+          version=$(make version | awk '{print $2}')
+
+          for platform in "${platforms[@]}"; do
+            echo "Extracting tarball from platform $platform"
+
+            container_id=$(docker create --platform $platform ${{ steps.meta.outputs.tags }})
+
+            mkdir -p ./tarball/${platform}
+
+            docker cp $container_id:/app ./tarball/${platform}
+
+            docker rm $container_id
+
+            tarball_name="Rokon-${version}-Linux-$(basename $platform).tar.gz"
+
+            tar -czf $tarball_name ./tarball/${platform}
+          done
+      - name: Install dependencies
         run: |
-          ls -la /var/run/docker.sock
-      - name: Load FUSE.
-        run: modprobe fuse
-      - name: Run Docker on tmpfs
-        uses: JonasAlfredsson/docker-on-tmpfs@v1
-        with:
-          tmpfs_size: 5
-          swap_size: 4
-          swap_location: '/mnt/swapfile'
-      - name: Build aarch64 on ubuntu_latest
-        uses: uraimo/run-on-arch-action@v2
-        with:
-          arch: aarch64
-          distro: ubuntu_latest
-          env: |
-            CC: "clang"
-            CXX: "clang++"
-            GITHUB_WORKSPACE: "${{github.workspace}}"
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
-          install: |
-            apt update
-            apt full-upgrade -y
-            apt install -y libgtk-4-dev libgirepository1.0-dev software-properties-common make clang git
-            add-apt-repository ppa:longsleep/golang-backports
-            apt install -y golang-go
-          run: |
-            chown -R $(whoami):$(whoami) .
-            rm cgosymbolizer_linux.go # breaks builds
-            go build -v .
-            make run
-            make tarball
-            make NOTB=1 TARBALLDIR=./AppDir TBPKGFMT=AppImage tarball
-      - name: Create Bootleg AppImage
+          # Install necessary dependencies
+          sudo apt -y install zsync desktop-file-utils python3 python3-pip fakeroot python3-setuptools squashfs-tools util-linux appstream software-properties-common make
+          sudo add-apt-repository universe
+          sudo apt install -y libfuse2t64
+
+      - name: Setup mkappimage
         run: |
-            sudo apt -y install zsync desktop-file-utils python3 python3-pip fakeroot python3-setuptools squashfs-tools util-linux appstream software-properties-common && sudo add-apt-repository universe && sudo apt install -y libfuse2t64
+          if [ ! -f /usr/local/bin/mkappimage ]; then
+            echo "Downloading mkappimage..."
             wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "mkappimage-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
-            chmod +x mkappimage-*.AppImage
+            chmod +x *.AppImage
             mv mkappimage-* mkappimage
             sudo mv mkappimage /usr/local/bin
-            sudo chown -R $(whoami) .
-            make TARBALLDIR=./AppDir ARCH=aarch64 basedimage
-      - name: 😭 Upload Failed Directories For Debug
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: rokon-${{runner.os}}-failed-aarch64
-          path: |
-            tarball
-            run
-            AppDir
-            *.AppImage
-            *.tar*
-          include-hidden-files: true
-          if-no-files-found: error
+          else
+            echo "mkappimage is already installed"
+          fi
+
+      - name: Generate AppImage for each platform
+        run: |
+          platforms=("linux/386" "linux/amd64" "linux/arm" "linux/aarch64")
+          for platform in "${platforms[@]}"; do
+            echo "Creating AppImage for platform $platform"
+
+            case "$platform" in
+              "linux/386")
+                ARCH="i686"
+                ;;
+              "linux/amd64")
+                ARCH="x86_64"
+                ;;
+              "linux/arm")
+                ARCH="armhf"
+                ;;
+              "linux/aarch64")
+                ARCH="aarch64"
+                ;;
+              *)
+                echo "Unknown platform $platform"
+                continue
+                ;;
+            esac
+
+            TARBALLDIR="./tarball/${ARCH}"
+
+            mkdir -p $TARBALLDIR
+
+            make TARBALLDIR=$TARBALLDIR ARCH=$ARCH basedimage
+          done
+      - name: Generate Runfile for each platform
+        run: |
+          platforms=("linux/386" "linux/amd64" "linux/arm" "linux/aarch64" "linux/ppc64le" "linux/riscv64" "linux/s390x")
+          for platform in "${platforms[@]}"; do
+            echo "Creating Runfile for platform $platform"
+
+            case "$platform" in
+              "linux/386")
+                ARCH="i686"
+                ;;
+              "linux/amd64")
+                ARCH="x86_64"
+                ;;
+              "linux/arm")
+                ARCH="armhf"
+                ;;
+              "linux/aarch64")
+                ARCH="aarch64"
+                ;;
+              *)
+                echo "Unknown platform $platform"
+                ARCH=$(basename $platform)
+                continue
+                ;;
+            esac
+
+            TARBALLDIR="./tarball/${ARCH}"
+
+            # Build the AppImage
+            make TARBALLDIR=$TARBALLDIR ARCH=$ARCH basedrun
+          done
       - name: 🗃️ Upload Built Runfile 📦
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: rokon-${{runner.os}}-runfile-aarch64
+          name: Rokon-${{runner.os}}-runfile
           include-hidden-files: true
           if-no-files-found: error
           path: |
@@ -142,7 +180,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: rokon-${{runner.os}}-tarball-aarch64
+          name: Rokon-${{runner.os}}-tarball
           include-hidden-files: true
           if-no-files-found: error
           path: |
@@ -153,195 +191,7 @@ jobs:
         if: always()
 
         with:
-          name: rokon-AppImage-aarch64
-          if-no-files-found: error
-          path: |
-            *.AppImage
-            *.AppImage.zsync
-  build_armhf:
-    timeout-minutes: 2000
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Check out current repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Check if /var/run/docker.sock is mounted
-        run: |
-          ls -la /var/run/docker.sock
-      - name: Load FUSE.
-        run: modprobe fuse
-      - name: Run Docker on tmpfs
-        uses: JonasAlfredsson/docker-on-tmpfs@v1
-        with:
-          tmpfs_size: 5
-          swap_size: 4
-          swap_location: '/mnt/swapfile'
-      - name: Build armhf on Latest Ubuntu Release
-        uses: uraimo/run-on-arch-action@v2
-        with:
-          arch: armv7
-          distro: ubuntu_latest
-          env: |
-            CC: "clang"
-            CXX: "clang++"
-            GITHUB_WORKSPACE: "${{github.workspace}}"
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
-          install: |
-            apt update
-            apt full-upgrade -y
-            apt install -y libgtk-4-dev libgirepository1.0-dev software-properties-common make clang git
-            add-apt-repository ppa:longsleep/golang-backports
-            apt install -y golang-go
-          run: |
-            chown -R $(whoami):$(whoami) .
-            go build -v .
-            make run
-            make tarball
-            make NOTB=1 TARBALLDIR=./AppDir TBPKGFMT=AppImage tarball
-      - name: Create Bootleg AppImage
-        run: |
-            sudo apt -y install zsync desktop-file-utils python3 python3-pip fakeroot python3-setuptools squashfs-tools util-linux appstream software-properties-common && sudo add-apt-repository universe && sudo apt install -y libfuse2t64
-            wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "mkappimage-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
-            chmod +x mkappimage-*.AppImage
-            mv mkappimage-* mkappimage
-            sudo mv mkappimage /usr/local/bin
-            sudo chown -R $(whoami) .
-            make TARBALLDIR=./AppDir ARCH=armhf basedimage
-      - name: 😭 Upload Failed Directories For Debug
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: rokon-${{runner.os}}-failed-armhf
-          path: |
-            tarball
-            AppDir
-            run
-            *.AppImage
-            *.tar*
-          include-hidden-files: true
-          if-no-files-found: error
-      - name: 🗃️ Upload Built Runfile 📦
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: rokon-${{runner.os}}-runfile-armhf
-          include-hidden-files: true
-          if-no-files-found: error
-          path: |
-            *.run
-            *.run.zsync
-      - name: 🗃️ Upload Built Tarball 📦
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: rokon-${{runner.os}}-tarball-armhf
-          include-hidden-files: true
-          if-no-files-found: error
-          path: |
-            *.tar.gz
-            *tar*.zsync
-      - name: 🗃️ Upload Built AppImage 📦
-        uses: actions/upload-artifact@v4
-        if: always()
-
-        with:
-          name: rokon-AppImage-armhf
-          if-no-files-found: error
-          path: |
-            *.AppImage
-            *.AppImage.zsync
-  build_i686:
-    timeout-minutes: 2000
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Check out current repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Check if /var/run/docker.sock is mounted
-        run: |
-          ls -la /var/run/docker.sock
-      - name: Load FUSE.
-        run: modprobe fuse
-      - name: Run Docker on tmpfs
-        uses: JonasAlfredsson/docker-on-tmpfs@v1
-        with:
-          tmpfs_size: 5
-          swap_size: 4
-          swap_location: '/mnt/swapfile'
-      - name: Build i686 (32 bit Intel) on Debian Sid
-        uses: uraimo/run-on-arch-action@v2
-        with:
-          arch: none
-          distro: none
-          base_image: i386/debian:sid
-          env: |
-            CC: "clang"
-            CXX: "clang++"
-          setup: |
-            git config --global --add safe.directory /home/runner/work/Rokon/Rokon
-            rm -rf /root/go/pkg/mod/cache/vcs || true
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
-          install: |
-            apt update
-            apt install -y clang make libgtk-4-dev wget libgirepository1.0-dev git golang-go file shc
-          run: |
-            git config --global --add safe.directory /home/runner/work/Rokon/Rokon
-            git config --global --add safe.directory '*'
-            make run
-            make tarball
-            make NOTB=1 TARBALLDIR=./AppDir TBPKGFMT=AppImage tarball
-      - name: Create Bootleg AppImage
-        run: |
-            sudo apt -y install zsync desktop-file-utils python3 python3-pip fakeroot python3-setuptools squashfs-tools util-linux appstream software-properties-common && sudo add-apt-repository universe && sudo apt install -y libfuse2t64
-            wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "mkappimage-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
-            chmod +x mkappimage-*.AppImage
-            mv mkappimage-* mkappimage
-            sudo mv mkappimage /usr/local/bin
-            sudo chown -R $(whoami) ./AppDir
-            make TARBALLDIR=./AppDir ARCH=i686 basedimage
-      - name: 😭 Upload Failed Directories For Debug
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: rokon-${{runner.os}}-failed-i686
-          path: |
-            tarball
-            AppDir
-            run
-            *.AppImage
-            *.tar*
-          include-hidden-files: true
-          if-no-files-found: error
-      - name: 🗃️ Upload Built Runfile 📦
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: rokon-${{runner.os}}-runfile-i686
-          include-hidden-files: true
-          if-no-files-found: error
-          path: |
-            *.run
-            *.run.zsync
-      - name: 🗃️ Upload Built Tarball 📦
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: rokon-${{runner.os}}-tarball-i686
-          include-hidden-files: true
-          if-no-files-found: error
-          path: |
-            *.tar.gz
-            *tar*.zsync
-      - name: 🗃️ Upload Built AppImage 📦
-        uses: actions/upload-artifact@v4
-        if: always()
-
-        with:
-          name: rokon-AppImage-i686
+          name: Rokon-AppImage
           if-no-files-found: error
           path: |
             *.AppImage

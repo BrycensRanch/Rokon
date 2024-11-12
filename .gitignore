@@ -38,6 +38,7 @@ dmg/
 remote.go
 changelog_reader.go
 http_client.go
+telemetry.go
 
 *.log
 *.zip
@@ -73,6 +74,7 @@ appimagetool
 latest
 rpm
 debian/.debhelper
+app
 io.github.brycensranch.Rokon.desktop
 io.github.brycensranch.Rokon.metainfo.xml
 glibc-downgrade
