@@ -226,6 +226,31 @@ basedimage: ## create AppImage from existing tarball directory
 	cp usr/share/icons/hicolor/256x256/apps/io.github.brycensranch.Rokon.png $(TARBALLDIR)
 	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 mkappimage --comp zstd --ll -u "gh-releases-zsync|BrycensRanch|Rokon|latest|Rokon-*$(ARCH).AppImage.zsync" $(TARBALLDIR)
 
+.PHONY: basedrun
+basedrun: ## create Runfile from existing tarball directory
+	$(call print-target)
+	$(MAKE) check_selfextract
+	cp $(RUNDIR)/$(TARGET) $(RUNDIR)/selfextract_startup
+	echo "run" >> $(RUNDIR)/share/packageFormat
+	CGO_ENABLED=0 $(SELFEXTRACT) -v -f $(RUNFILE_NAME) -C $(RUNDIR) .
+	@if [ "$(SANITYCHECK)" == "1" ]; then \
+		./$(RUNFILE_NAME) --version; \
+		status=$$?; \
+		if [ $$status -ne 0 ]; then \
+			echo "Secondary Sanity check failed. See output above for details."; \
+			exit $$status; \
+		else \
+			echo "Secondary Sanity check succeeded."; \
+		fi; \
+	else \
+		echo "Secondary Sanity check skipped."; \
+	fi
+	@if command -v zsyncmake >/dev/null 2>&1; then \
+		zsyncmake $(RUNFILE_NAME) -u "gh-releases-zsync|BrycensRanch|Rokon|latest|$(RUNFILE_NAME).zsync"; \
+	else \
+		echo "zsyncmake not found. Please install it to generate the zsync file."; \
+	fi
+	@echo "Cheers, the run file was successfully created. It is the file ./$(RUNFILE_NAME) 🚀"
 .ONESHELL:
 .PHONY: tarball
 tarball: ## build self contained Tarball that auto updates
