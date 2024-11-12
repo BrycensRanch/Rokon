@@ -24,8 +24,8 @@ RUN apt update && apt full-upgrade -y
 RUN apt install -y git libgtk-4-dev libgirepository1.0-dev make golang-go clang
 RUN apt clean && apt autoremove
 
-
-RUN make PACKAGED=true TBPKGFMT=docker NOTB=1 tarball
+# Setting TBPKGFMT=detect will automatically detect the container runtime and set docker as the packageFormat accordingly.
+RUN make PACKAGED=true TBPKGFMT=detect NOTB=1 tarball
 
 FROM debian:testing-slim AS runner
 
