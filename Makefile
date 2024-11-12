@@ -34,6 +34,7 @@ ARCH := $(shell \
 
 
 
+
 ifneq ($(CFLAGS),)
     export CGO_CFLAGS := $(CFLAGS)
     $(info Using provided CFLAGS: $(CFLAGS))
@@ -72,6 +73,8 @@ RUNLIBS ?= $(RUNDIR)/libs
 ABS_RUNDIR := $(shell realpath $(RUNDIR))
 # Check if selfextract exists in the PATH
 SELFEXTRACT := $(shell command -v selfextract 2> /dev/null)
+GOOS := $(shell go env GOOS)
+
 
 # Determine the selfextract path based on environment variables
 ifneq ($(GOBIN),)
@@ -404,6 +407,12 @@ gen: ## go generate
 build: ## go build -v -o rokon
 	$(call print-target)
 	@echo "Building version $(VERSION) commit $(COMMIT) on branch $(BRANCH)"
+	@if [ "$(GOOS)" = "linux" ] && [ "$(ARCH)" != "x86_64" ] && [ "$(ARCH)" != "amd64" ] && [ "$(ARCH)" != "aarch64" ] && [ "$(ARCH)" != "arm64" ] && [ "$(ARCH)" != "i386" ] && [ "$(ARCH)" != "i686" ]; then \
+		if [ -f cgosymbolizer_linux.go ]; then \
+			rm -f cgosymbolizer_linux.go; \
+			echo "cgosymbolizer_linux.go is not supported for your CPU architecture. As such, it's been removed from the build. Do not commit this change to git."; \
+		fi; \
+	fi
 	go build -v -ldflags="-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.packaged=$(PACKAGED) -X main.packageFormat=$(PACKAGEFORMAT) -X main.branch=$(BRANCH) $(EXTRALDFLAGS)" $(EXTRAGOFLAGS) -o $(TARGET) -tags "$(BUILDTAGS)" .
 
 .PHONY: spell
