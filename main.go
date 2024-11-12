@@ -103,6 +103,13 @@ func createEvent(eventName string, eventData map[string]interface{}) {
 	aptabaseClient.TrackEvent(event)
 }
 
+func fileExists(path string) bool {
+	if _, err := os.Stat(path); err == nil {
+		return true
+	}
+	return false
+}
+
 var (
 	version              = "0.0.0-SNAPSHOT"
 	isPackaged           = "false"
@@ -150,6 +157,57 @@ func main() {
 		os.Setenv("GTK_CSD", "0")
 	default:
 	}
+    // Get the executable's directory
+    execDir, err := os.Executable()
+    if err != nil {
+        fmt.Println("Error getting executable path:", err)
+        packageFormat = "native"
+        return
+    }
+
+    execDir = filepath.Dir(execDir) // Get the directory where the executable is located
+
+	_, err = os.Stat("/.dockerenv")
+
+	if packageFormat == "detect" {
+
+	switch {
+	case os.Getenv("APPIMAGE") != "":
+		packageFormat = "AppImage"
+	case err == nil:
+		packageFormat = "docker"
+	case os.Getenv("CONTAINER") == "oci":
+		packageFormat = "docker"
+
+	case fileExists(filepath.Join(execDir, "share", "packageFormat")):
+		content, err := os.ReadFile(filepath.Join(execDir, "share", "packageFormat"))
+		if err == nil {
+			packageFormat = string(content)
+		}
+	case fileExists(filepath.Join(execDir, "usr", "share", "packageFormat")):
+		content, err := os.ReadFile(filepath.Join(execDir, "usr", "share", "packageFormat"))
+		if err == nil {
+			packageFormat = string(content)
+		}
+	case fileExists(filepath.Join(execDir, "usr", "share", "rokon", "packageFormat")):
+		content, err := os.ReadFile(filepath.Join(execDir, "usr", "share", "rokon", "packageFormat"))
+		if err == nil {
+			packageFormat = string(content)
+		}
+	case fileExists(filepath.Join(execDir, "usr", "local", "share", "rokon", "packageFormat")):
+		content, err := os.ReadFile(filepath.Join(execDir, "usr", "share", "rokon", "packageFormat"))
+		if err == nil {
+			packageFormat = string(content)
+		}
+	default:
+		// Set to "native" if no valid package format is detected
+		packageFormat = "native"
+	}
+
+    log.Println("Detected package format:", packageFormat)
+}
+
+
 	app := gtk.NewApplication("io.github.brycensranch.Rokon", gio.ApplicationFlagsNone)
 	aptabaseClient = aptabase.NewClient("A-US-0332858461", version, uint64(133), false, "")
 	aptabaseClient.Logger = telemetryLogger
