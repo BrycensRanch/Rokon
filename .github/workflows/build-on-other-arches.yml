@@ -115,23 +115,28 @@ jobs:
             case "$platform" in
               "linux/386")
                 ARCH="i686"
+                PLATFORM_ARCH=$(basename $platform)
                 ;;
               "linux/amd64")
                 ARCH="x86_64"
+                PLATFORM_ARCH=$(basename $platform)
                 ;;
               "linux/arm")
                 ARCH="armhf"
+                PLATFORM_ARCH=$(basename $platform)
                 ;;
               "linux/aarch64")
                 ARCH="aarch64"
+                PLATFORM_ARCH=$(basename $platform)
                 ;;
               *)
                 echo "Unknown platform $platform"
+                PLATFORM_ARCH=$(basename $platform)
                 continue
                 ;;
             esac
 
-            TARBALLDIR="./tarball/${ARCH}"
+            TARBALLDIR="./tarball/${PLATFORM_ARCH}"
 
             mkdir -p $TARBALLDIR
 
@@ -146,24 +151,29 @@ jobs:
             case "$platform" in
               "linux/386")
                 ARCH="i686"
+                PLATFORM_ARCH=$(basename $platform)
                 ;;
               "linux/amd64")
                 ARCH="x86_64"
+                PLATFORM_ARCH=$(basename $platform)
                 ;;
               "linux/arm")
                 ARCH="armhf"
+                PLATFORM_ARCH=$(basename $platform)
                 ;;
               "linux/aarch64")
                 ARCH="aarch64"
+                PLATFORM_ARCH=$(basename $platform)
                 ;;
               *)
                 echo "Unknown platform $platform"
                 ARCH=$(basename $platform)
+                PLATFORM_ARCH=$(basename $platform)
                 continue
                 ;;
             esac
 
-            TARBALLDIR="./tarball/${ARCH}"
+            TARBALLDIR="./tarball/${PLATFORM_ARCH}"
 
             # Build the AppImage
             make TARBALLDIR=$TARBALLDIR ARCH=$ARCH basedrun
