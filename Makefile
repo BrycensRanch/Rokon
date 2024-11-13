@@ -300,11 +300,16 @@ endif
 check_selfextract:
 	@if [ ! -x "$(SELFEXTRACT_PATH)" ]; then \
 		echo "selfextract command not found in $(SELFEXTRACT_PATH), installing..."; \
-		cd tools && go get github.com/synthesio/selfextract && go install -v github.com/synthesio/selfextract; \
+		cd tools && go get github.com/synthesio/selfextract && CGO_ENABLED=0 go install -v github.com/synthesio/selfextract; \
 		cd -; \
 		echo "selfextract installed..."; \
+	elif file "$(SELFEXTRACT_PATH)" | grep -q 'dynamically linked'; then \
+		echo "$(SELFEXTRACT_PATH) is dynamically linked, reinstalling..."; \
+		cd tools && go get github.com/synthesio/selfextract && CGO_ENABLED=0 go install -v github.com/synthesio/selfextract; \
+		cd -; \
+		echo "selfextract reinstalled..."; \
 	else \
-		echo "Using selfextract located at: $(SELFEXTRACT_PATH)"; \
+		echo "Using statically linked selfextract located at: $(SELFEXTRACT_PATH)"; \
 	fi
 
 .ONESHELL:
