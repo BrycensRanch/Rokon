@@ -72,8 +72,10 @@ jobs:
 
           for platform in "${platforms[@]}"; do
             echo "Extracting tarball from platform $platform"
+            # Typically multi line, I only want the first line
+            tag=$(echo "$DOCKER_METADATA_OUTPUT_TAGS" | head -n 1)
 
-            container_id=$(docker create --platform $platform ${{ steps.meta.outputs.tags }})
+            container_id=$(docker create --platform $platform $tag)
 
             mkdir -p ./tarball/${platform}
 
