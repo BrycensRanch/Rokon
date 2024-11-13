@@ -479,9 +479,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          pattern: |
-            *AppImage*
-            *run*
+          pattern: "*AppImage*|*run*"
           merge-multiple: true
 
       - name: Run binary tests
