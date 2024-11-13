@@ -122,7 +122,22 @@ var (
 )
 
 func main() {
-	err := os.MkdirAll(filepath.Dir(logFilePath), 0755)
+    execDir, err := os.Executable()
+    if err != nil {
+        fmt.Println("Error getting executable path:", err)
+        return
+    }
+
+    execDir = filepath.Dir(execDir) // Get the directory where the executable is located
+
+
+
+	if fileExists(filepath.Join(execDir, "portable.txt")) {
+		logFilePath = filepath.Join(execDir, "data", "logs", "latest.log")
+		tempDir = filepath.Join(execDir, "data", "cache")
+	}
+
+	err = os.MkdirAll(filepath.Dir(logFilePath), 0755)
 	if err != nil {
 		fmt.Println("Error creating directory:", err)
 		return
@@ -157,19 +172,9 @@ func main() {
 		os.Setenv("GTK_CSD", "0")
 	default:
 	}
-    // Get the executable's directory
-    execDir, err := os.Executable()
-    if err != nil {
-        fmt.Println("Error getting executable path:", err)
-        packageFormat = "native"
-        return
-    }
-
-    execDir = filepath.Dir(execDir) // Get the directory where the executable is located
-
-	_, err = os.Stat("/.dockerenv")
 
 	if packageFormat == "detect" {
+	_, err = os.Stat("/.dockerenv")
 
 	switch {
 	case os.Getenv("APPIMAGE") != "":

@@ -35,6 +35,8 @@ dmg/
 *.run*
 ./shellc*
 
+
+data
 remote.go
 changelog_reader.go
 http_client.go
