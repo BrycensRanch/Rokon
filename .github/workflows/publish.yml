@@ -462,7 +462,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu:22.04
+          - ubuntu:20.04
           - mageia:latest
           - redhat/ubi9
           - opensuse/leap:latest
