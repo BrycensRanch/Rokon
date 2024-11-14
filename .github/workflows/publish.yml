@@ -457,6 +457,7 @@ jobs:
   test-artifacts:
     # runs-on: [self-hosted, docker]
     runs-on: ubuntu-24.04
+    needs: [archlinux, fedora]
     strategy:
       fail-fast: false
       matrix:
@@ -476,26 +477,6 @@ jobs:
         --cap-add=SYS_PTRACE
 
     steps:
-      - uses: yogeshlonkar/wait-for-jobs@v0
-        with:
-
-          # To ignore jobs that are skipped from given list of job dependencies
-          # default: 'false'
-          # required: false
-          ignore-skipped: 'false'
-
-          # Comma or newline separated list of names of job dependencies for this step, it must be `name:` property of job if set
-          # required: true
-          jobs: 'job1,job2,Job 3'
-
-          # Interval in milliseconds between each check of dependencies completion
-          interval: '2500'
-
-          # Maximum number of minutes to wait before giving up. Step will fail with message providing remaining job names.
-          ttl: '60'
-
-          # If set to true, the ttl will NOT be overridden to 60 minutes if it is set more than 60 minutes
-          no-max-ttl: 'true'
       # See https://github.com/actions/download-artifact/issues/343 & https://github.com/actions/download-artifact/issues/339 to see why this is pinned. If you bump this sha, you will be FIRED. >:(
       - uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
         continue-on-error: true
