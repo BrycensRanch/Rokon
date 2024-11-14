@@ -15,7 +15,7 @@ env:
   # AppImages in Docker Containers suck.
   APPIMAGE_EXTRACT_AND_RUN: 1
 jobs:
-  normal_docker:
+  arm64_docker:
     timeout-minutes: 3000
     runs-on: ubuntu-24.04
     steps:
