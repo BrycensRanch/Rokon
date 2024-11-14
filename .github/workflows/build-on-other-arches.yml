@@ -111,32 +111,28 @@ jobs:
           platforms=("linux/386" "linux/amd64" "linux/arm" "linux/aarch64")
           for platform in "${platforms[@]}"; do
             echo "Creating AppImage for platform $platform"
-
+            PLATFORM=$platform
+            PLATFORM_ARCH=$(basename $platform)
             case "$platform" in
               "linux/386")
                 ARCH="i686"
-                PLATFORM_ARCH=$(basename $platform)
                 ;;
               "linux/amd64")
                 ARCH="x86_64"
-                PLATFORM_ARCH=$(basename $platform)
                 ;;
               "linux/arm")
                 ARCH="armhf"
-                PLATFORM_ARCH=$(basename $platform)
                 ;;
               "linux/aarch64")
                 ARCH="aarch64"
-                PLATFORM_ARCH=$(basename $platform)
                 ;;
               *)
                 echo "Unknown platform $platform"
-                PLATFORM_ARCH=$(basename $platform)
                 continue
                 ;;
             esac
 
-            TARBALLDIR="./tarball/${PLATFORM_ARCH}"
+            TARBALLDIR="./tarball/${PLATFORM}"
 
             mkdir -p $TARBALLDIR
 
@@ -147,33 +143,29 @@ jobs:
           platforms=("linux/386" "linux/amd64" "linux/arm" "linux/aarch64" "linux/ppc64le" "linux/riscv64" "linux/s390x")
           for platform in "${platforms[@]}"; do
             echo "Creating Runfile for platform $platform"
-
+            PLATFORM=$platform
+            PLATFORM_ARCH=$(basename $platform)
             case "$platform" in
               "linux/386")
                 ARCH="i686"
-                PLATFORM_ARCH=$(basename $platform)
                 ;;
               "linux/amd64")
                 ARCH="x86_64"
-                PLATFORM_ARCH=$(basename $platform)
                 ;;
               "linux/arm")
                 ARCH="armhf"
-                PLATFORM_ARCH=$(basename $platform)
                 ;;
               "linux/aarch64")
                 ARCH="aarch64"
-                PLATFORM_ARCH=$(basename $platform)
                 ;;
               *)
                 echo "Unknown platform $platform"
                 ARCH=$(basename $platform)
-                PLATFORM_ARCH=$(basename $platform)
                 continue
                 ;;
             esac
 
-            TARBALLDIR="./tarball/${PLATFORM_ARCH}"
+            TARBALLDIR="./tarball/${PLATFORM}"
 
             # Build the AppImage
             make TARBALLDIR=$TARBALLDIR ARCH=$ARCH basedrun
