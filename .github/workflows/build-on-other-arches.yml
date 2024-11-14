@@ -87,6 +87,8 @@ jobs:
 
             tar -czf $tarball_name ./tarball/${platform}
           done
+      - name: List files
+        run: ls -R
       - name: Install dependencies
         run: |
           # Install necessary dependencies
@@ -132,7 +134,7 @@ jobs:
                 ;;
             esac
 
-            TARBALLDIR="./tarball/${PLATFORM}"
+            TARBALLDIR="./tarball/${PLATFORM}/app"
 
             mkdir -p $TARBALLDIR
 
@@ -165,7 +167,7 @@ jobs:
                 ;;
             esac
 
-            TARBALLDIR="./tarball/${PLATFORM}"
+            TARBALLDIR="./tarball/${PLATFORM}/app"
 
             # Build the AppImage
             make TARBALLDIR=$TARBALLDIR ARCH=$ARCH basedrun
