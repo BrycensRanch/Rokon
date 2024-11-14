@@ -21,7 +21,7 @@ runs:
   using: composite
   steps:
       - name: Run Docker on tmpfs
-        if: inputs.tmpfs == 'true'
+        if: inputs.tmpfs == 'true' && runner.environment.github-hosted # If ran on self hosted runners, it has unintended consequences of our VMs crashing from OOM Error
         uses: JonasAlfredsson/docker-on-tmpfs@v1
         with:
           tmpfs_size: 5
