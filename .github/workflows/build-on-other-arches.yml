@@ -163,14 +163,13 @@ jobs:
               *)
                 echo "Unknown platform $platform"
                 ARCH=$(basename $platform)
-                continue
                 ;;
             esac
 
             TARBALLDIR="./tarball/${PLATFORM}/app"
+            mkdir -p $TARBALLDIR
 
-            # Build the AppImage
-            make TARBALLDIR=$TARBALLDIR ARCH=$ARCH basedrun
+            make RUNDIR=$TARBALLDIR ARCH=$ARCH basedrun
           done
       - name: 🗃️ Upload Built Runfile 📦
         uses: actions/upload-artifact@v4

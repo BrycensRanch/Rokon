@@ -227,7 +227,7 @@ basedimage: ## create AppImage from existing tarball directory
 	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 mkappimage --comp zstd --ll -u "gh-releases-zsync|BrycensRanch|Rokon|latest|Rokon-*$(ARCH).AppImage.zsync" $(TARBALLDIR)
 
 .PHONY: basedrun
-basedrun: ## create Runfile from existing tarball directory
+basedrun: ## create Runfile from existing run directory
 	$(call print-target)
 	$(MAKE) check_selfextract
 	cp $(RUNDIR)/$(TARGET) $(RUNDIR)/selfextract_startup
