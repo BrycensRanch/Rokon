@@ -428,9 +428,9 @@ func showAboutWindow(mainWindow *gtk.ApplicationWindow, app *gtk.Application) {
 	aboutWindow.SetWebsiteLabel("GitHub")
 	//nolint:gosec // In GTK We trust.
 	aboutWindow.SetSystemInformation(
-		fmt.Sprintf("GTK: %d.%d.%d", int(gtk.GetMajorVersion()), int(gtk.GetMinorVersion()), int(gtk.GetMicroVersion())),
+		 fmt.Sprintf("OS: %s (%s,%s)\n", getOSRelease(), runtime.GOOS, runtime.GOARCH) + fmt.Sprintf("Go: %s\n", runtime.Version()) + fmt.Sprintf("GTK: %d.%d.%d", int(gtk.GetMajorVersion()), int(gtk.GetMinorVersion()), int(gtk.GetMicroVersion())),
 	)
-	aboutWindow.SetCopyright("2024 Brycen G and contributors, but mostly Brycen")
+	aboutWindow.SetCopyright("©️ 2024 Brycen G and contributors, but mostly Brycen")
 	aboutWindow.SetWrapLicense(true)
 	aboutWindow.SetModal(false)
 	aboutWindow.SetDestroyWithParent(true)
@@ -732,9 +732,17 @@ func activate(app *gtk.Application) {
 					log.Println("Discovered Rokus:", discoveredRokus)
 					const spacing = int(5)
 					vbox := gtk.NewBox(gtk.OrientationVertical, spacing)
-					window.SetChild(vbox)
+					grid := gtk.NewGrid()
+					grid.Attach(&vbox.Widget, 1, 0, 1, 1)
+					vbox.SetMarginTop(10)   // Optional: Add some margin to the top
+					vbox.SetMarginEnd(10)   // Optional: Add some margin to the right
+					vbox.SetHAlign(gtk.AlignEnd) // Align horizontally to the right (end)
+					vbox.SetVAlign(gtk.AlignStart) // Align vertically to the top (start)
+					window.SetChild(grid)
+
 					labelText := fmt.Sprintf("Friendly Name: %s\nIP Address: %s",
 						root.Device.FriendlyName, discoveredRokus[0].Location)
+
 					label := gtk.NewLabel(labelText)
 					vbox.Append(label) // Add label to the vertical box
 				} else {
