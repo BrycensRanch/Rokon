@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/adrg/xdg"
+	"golang.org/x/mod/semver"
 
 	"github.com/brycensranch/go-aptabase/pkg/aptabase/v1"
 	"github.com/brycensranch/go-aptabase/pkg/osinfo/v1"
@@ -508,23 +509,24 @@ func createMenu(window *gtk.ApplicationWindow, app *gtk.Application) *gio.Menu {
 		// Make the request
 		resp, err := client.R().SetResult(&GitHubRelease{}).Get(url)
 		if err != nil {
-			showDialog("Update Check Failed", fmt.Sprintf("Error fetching release information: %v", err), app)
+			log.Printf("Update Check Failed. Error fetching release information: %v", err)
 			return
 		}
 
 		if resp.StatusCode() != 200 {
-			showDialog("Update Check Failed", "Unable to fetch release info: "+resp.Status(), app)
+			log.Printf("Update Check Failed. Unable to fetch release info: "+resp.Status())
 			return
 		}
 
-		// Decode the response into the GitHubRelease struct
 		release := resp.Result().(*GitHubRelease)
-
-		// Compare versions
-		if release.TagName != app.Version() {
-			showDialog("Update Available", "A new version is available: "+release.TagName, app)
+		latestReleaseVersion := release.TagName
+		appVersion := app.Version()
+		if semver.Compare(latestReleaseVersion, appVersion) > 0 {
+			log.Printf("A new version is available: "+latestReleaseVersion)
+		} else if semver.Compare(latestReleaseVersion, appVersion) == 0 {
+			log.Printf("Rokon is up to date!")
 		} else {
-			showDialog("Up to Date", "Your application is up to date.", app)
+			log.Printf("You're ahead of the latest release", "You are using a newer version than the available release.")
 		}
 	})
 

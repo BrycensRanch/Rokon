@@ -10,6 +10,7 @@ require (
 	github.com/go-resty/resty/v2 v2.15.3
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20241025222116-6b205f073fdd
 	github.com/koron/go-ssdp v0.0.4
+	golang.org/x/mod v0.22.0
 )
 
 require (
