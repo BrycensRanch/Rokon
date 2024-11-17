@@ -37,6 +37,11 @@
   strip-components: 3
   type: archive
   url: https://proxy.golang.org/github.com/koron/go-ssdp/@v/v0.0.4.zip
+- dest: vendor/golang.org/x/mod
+  sha256: 0d0a96054b32dfa40cec2a2868bf87cdda31e3bb2dac0a5e2218efe3ef3ef3cc
+  strip-components: 3
+  type: archive
+  url: https://proxy.golang.org/golang.org/x/mod/@v/v0.22.0.zip
 - dest: vendor/github.com/davecgh/go-spew
   sha256: b4d0923b169b194f0016ec46f3df1ab0c68e27999743e43fe2de59ecb2484128
   strip-components: 3
