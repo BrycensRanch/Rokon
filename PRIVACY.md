@@ -17,7 +17,7 @@ By default, Rokon collects telemetry data about how my application is performing
 - Your Roku's model number ie `C177X`
 - Your Roku's operating system ie `Roku/13.1.4 UPnP/1.0 Roku/13.1.4`
 - General Region ie `United States`
-- How many times you've ran the application ie `19`, minutesActive ie `320`
+- How many times you've run the application ie `19`, minutesActive ie `320`
 
 All this data helps to improve Rokon as it is [Free software](https://www.gnu.org/licenses/agpl-3.0.en.html).
 
