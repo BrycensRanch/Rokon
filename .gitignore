@@ -36,11 +36,11 @@ dmg/
 ./shellc*
 
 config.toml
+qt6
 data
 remote.go
 changelog_reader.go
 http_client.go
-telemetry.go
 
 *.log
 *.zip
