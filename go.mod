@@ -11,10 +11,7 @@ require (
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20241025222116-6b205f073fdd
 	github.com/koron/go-ssdp v0.0.4
 	github.com/spf13/viper v1.19.0
-<<<<<<< HEAD
-=======
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
->>>>>>> 370a3a7 (refactor: split main.go into respective files for easier testing)
 	golang.org/x/mod v0.22.0
 )
 
