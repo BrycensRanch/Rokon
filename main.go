@@ -13,6 +13,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/adrg/xdg"
 	"golang.org/x/mod/semver"
@@ -118,33 +119,60 @@ var (
 	telemetryOnByDefault = "true"
 	commit               = "unknown"
 	branch               = "unknown"
-	logFilePath = filepath.Join(xdg.DataHome, "rokon", "logs", "latest.log")
-	tempDir = filepath.Join(xdg.CacheHome, "rokon")
+	date                 = "unknown"
+	logFilePath          = filepath.Join(xdg.DataHome, "rokon", "logs", "latest.log")
+	tempDir              = filepath.Join(xdg.CacheHome, "rokon")
 )
 
 func main() {
-    execDir, err := os.Executable()
-    if err != nil {
-        fmt.Println("Error getting executable path:", err)
-        return
-    }
-
-    execDir = filepath.Dir(execDir) // Get the directory where the executable is located
-
-
+	execDir, err := os.Executable()
+	if err != nil {
+		fmt.Println("Error getting executable path:", err)
+		return
+	}
+	execDir = filepath.Dir(execDir) // Get the directory where the executable is located
 
 	if fileExists(filepath.Join(execDir, "portable.txt")) {
 		logFilePath = filepath.Join(execDir, "data", "logs", "latest.log")
 		tempDir = filepath.Join(execDir, "data", "cache")
 	}
+	logDir := filepath.Dir(logFilePath)
 
 	err = os.MkdirAll(filepath.Dir(logFilePath), 0755)
 	if err != nil {
 		fmt.Println("Error creating directory:", err)
 		return
 	}
+
+	// Check if the latest.log file exists, and if so, rename it to the date-based file name
+	if fileExists(logFilePath) {
+		// Generate the new log filename based on the current date
+		today := time.Now().Format("2006-01-02") // Date format: YYYY-MM-DD
+		backupLogPath := filepath.Join(logDir, fmt.Sprintf("main-%s.log", today))
+
+		if fileExists(backupLogPath) {
+			backupLogFileBytes, err := os.ReadFile(backupLogPath)
+			// Irresponsibly ignoring errors! Don't do this at home, kids.
+			logFileBytes, _ := os.ReadFile(logFilePath)
+			combinedLogFileBytes := append(backupLogFileBytes, logFileBytes...)
+			if err != nil {
+				log.Printf("Couldn't read %s. Not attempting to append it with latest.log from today.", backupLogPath)
+			} else {
+			// append
+			os.WriteFile(backupLogPath, combinedLogFileBytes, 0755)
+			}
+		} else {
+			// Rename the current latest.log to the new file
+			err := os.Rename(logFilePath, backupLogPath)
+			if err != nil {
+				log.Printf("Error renaming log file: %v\n", err)
+				return
+			}
+		}
+		log.Printf("Renamed **OLD** latest.log to %s\n", backupLogPath)
+	}
 	// Open a log file (in append mode).
-	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o666)
 	if err != nil {
 		fmt.Println("Error opening rokon log file:", err)
 		return
@@ -175,44 +203,43 @@ func main() {
 	}
 
 	if packageFormat == "detect" {
-	_, err = os.Stat("/.dockerenv")
+		_, err = os.Stat("/.dockerenv")
 
-	switch {
-	case os.Getenv("APPIMAGE") != "":
-		packageFormat = "AppImage"
-	case err == nil:
-		packageFormat = "docker"
-	case os.Getenv("CONTAINER") == "oci":
-		packageFormat = "docker"
+		switch {
+		case os.Getenv("APPIMAGE") != "":
+			packageFormat = "AppImage"
+		case err == nil:
+			packageFormat = "docker"
+		case os.Getenv("CONTAINER") == "oci":
+			packageFormat = "docker"
 
-	case fileExists(filepath.Join(execDir, "share", "packageFormat")):
-		content, err := os.ReadFile(filepath.Join(execDir, "share", "packageFormat"))
-		if err == nil {
-			packageFormat = string(content)
+		case fileExists(filepath.Join(execDir, "share", "packageFormat")):
+			content, err := os.ReadFile(filepath.Join(execDir, "share", "packageFormat"))
+			if err == nil {
+				packageFormat = string(content)
+			}
+		case fileExists(filepath.Join(execDir, "usr", "share", "packageFormat")):
+			content, err := os.ReadFile(filepath.Join(execDir, "usr", "share", "packageFormat"))
+			if err == nil {
+				packageFormat = string(content)
+			}
+		case fileExists(filepath.Join(execDir, "usr", "share", "rokon", "packageFormat")):
+			content, err := os.ReadFile(filepath.Join(execDir, "usr", "share", "rokon", "packageFormat"))
+			if err == nil {
+				packageFormat = string(content)
+			}
+		case fileExists(filepath.Join(execDir, "usr", "local", "share", "rokon", "packageFormat")):
+			content, err := os.ReadFile(filepath.Join(execDir, "usr", "share", "rokon", "packageFormat"))
+			if err == nil {
+				packageFormat = string(content)
+			}
+		default:
+			// Set to "native" if no valid package format is detected
+			packageFormat = "native"
 		}
-	case fileExists(filepath.Join(execDir, "usr", "share", "packageFormat")):
-		content, err := os.ReadFile(filepath.Join(execDir, "usr", "share", "packageFormat"))
-		if err == nil {
-			packageFormat = string(content)
-		}
-	case fileExists(filepath.Join(execDir, "usr", "share", "rokon", "packageFormat")):
-		content, err := os.ReadFile(filepath.Join(execDir, "usr", "share", "rokon", "packageFormat"))
-		if err == nil {
-			packageFormat = string(content)
-		}
-	case fileExists(filepath.Join(execDir, "usr", "local", "share", "rokon", "packageFormat")):
-		content, err := os.ReadFile(filepath.Join(execDir, "usr", "share", "rokon", "packageFormat"))
-		if err == nil {
-			packageFormat = string(content)
-		}
-	default:
-		// Set to "native" if no valid package format is detected
-		packageFormat = "native"
+
+		log.Println("Detected package format:", packageFormat)
 	}
-
-    log.Println("Detected package format:", packageFormat)
-}
-
 
 	app := gtk.NewApplication("io.github.brycensranch.Rokon", gio.ApplicationFlagsNone)
 	aptabaseClient = aptabase.NewClient("A-US-0332858461", version, uint64(133), false, "")
@@ -220,7 +247,7 @@ func main() {
 	if version != "" {
 		app.SetVersion(version)
 	}
-	log.Printf("Version %s commit %s branch %s\n", version, commit, branch)
+	log.Printf("Version %s commit %s branch %s (built on %s)\n", version, commit, branch, date)
 	switch runtime.GOOS {
 	case "linux":
 		release := getOSRelease()
@@ -429,7 +456,7 @@ func showAboutWindow(mainWindow *gtk.ApplicationWindow, app *gtk.Application) {
 	aboutWindow.SetWebsiteLabel("GitHub")
 	//nolint:gosec // In GTK We trust.
 	aboutWindow.SetSystemInformation(
-		 fmt.Sprintf("OS: %s (%s,%s)\n", getOSRelease(), runtime.GOOS, runtime.GOARCH) + fmt.Sprintf("Go: %s\n", runtime.Version()) + fmt.Sprintf("GTK: %d.%d.%d", int(gtk.GetMajorVersion()), int(gtk.GetMinorVersion()), int(gtk.GetMicroVersion())),
+		fmt.Sprintf("OS: %s (%s,%s)\n", getOSRelease(), runtime.GOOS, runtime.GOARCH) + fmt.Sprintf("Go: %s\n", runtime.Version()) + fmt.Sprintf("GTK: %d.%d.%d", int(gtk.GetMajorVersion()), int(gtk.GetMinorVersion()), int(gtk.GetMicroVersion())),
 	)
 	aboutWindow.SetCopyright("©️ 2024 Brycen G and contributors, but mostly Brycen")
 	aboutWindow.SetWrapLicense(true)
@@ -514,7 +541,7 @@ func createMenu(window *gtk.ApplicationWindow, app *gtk.Application) *gio.Menu {
 		}
 
 		if resp.StatusCode() != 200 {
-			log.Printf("Update Check Failed. Unable to fetch release info: "+resp.Status())
+			log.Printf("Update Check Failed. Unable to fetch release info: " + resp.Status())
 			return
 		}
 
@@ -522,7 +549,7 @@ func createMenu(window *gtk.ApplicationWindow, app *gtk.Application) *gio.Menu {
 		latestReleaseVersion := release.TagName
 		appVersion := app.Version()
 		if semver.Compare(latestReleaseVersion, appVersion) > 0 {
-			log.Printf("A new version is available: "+latestReleaseVersion)
+			log.Printf("A new version is available: " + latestReleaseVersion)
 		} else if semver.Compare(latestReleaseVersion, appVersion) == 0 {
 			log.Printf("Rokon is up to date!")
 		} else {
@@ -672,8 +699,10 @@ func activate(app *gtk.Application) {
 		// Use glib.IdleAdd to ensure UI updates happen on the main thread
 		glib.IdleAdd(func() {
 			if discoveredRokus != nil {
-				fmt.Println("Discovered Rokus:", discoveredRokus)
+				log.Println("Discovered Rokus:", discoveredRokus)
 				window.SetChild(&gtk.NewLabel("Discovered Rokus:").Widget)
+				log.Println("Number of goroutines:", runtime.NumGoroutine())
+
 			} else {
 				window.SetChild(&gtk.NewLabel("No Rokus discovered via SSDP!").Widget)
 			}
@@ -736,9 +765,9 @@ func activate(app *gtk.Application) {
 					vbox := gtk.NewBox(gtk.OrientationVertical, spacing)
 					grid := gtk.NewGrid()
 					grid.Attach(&vbox.Widget, 1, 0, 1, 1)
-					vbox.SetMarginTop(10)   // Optional: Add some margin to the top
-					vbox.SetMarginEnd(10)   // Optional: Add some margin to the right
-					vbox.SetHAlign(gtk.AlignEnd) // Align horizontally to the right (end)
+					vbox.SetMarginTop(10)          // Optional: Add some margin to the top
+					vbox.SetMarginEnd(10)          // Optional: Add some margin to the right
+					vbox.SetHAlign(gtk.AlignEnd)   // Align horizontally to the right (end)
 					vbox.SetVAlign(gtk.AlignStart) // Align vertically to the top (start)
 					window.SetChild(grid)
 
@@ -747,6 +776,8 @@ func activate(app *gtk.Application) {
 
 					label := gtk.NewLabel(labelText)
 					vbox.Append(label) // Add label to the vertical box
+					log.Println("Number of goroutines:", runtime.NumGoroutine())
+
 				} else {
 					window.SetChild(&gtk.NewLabel("No Rokus discovered via SSDP!").Widget)
 				}
