@@ -7,7 +7,7 @@ require (
 	github.com/benesch/cgosymbolizer v0.0.0-20190515212042-bec6fe6e597b
 	github.com/brycensranch/go-aptabase/pkg v0.0.0-20241110150153-bfe02ddfffce
 	github.com/diamondburned/gotk4/pkg v0.3.1
-	github.com/go-resty/resty/v2 v2.15.3
+	github.com/go-resty/resty/v2 v2.16.0
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20241025222116-6b205f073fdd
 	github.com/koron/go-ssdp v0.0.4
 	golang.org/x/mod v0.22.0
