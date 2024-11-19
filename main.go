@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/adrg/xdg"
+	"github.com/spf13/viper"
 	"golang.org/x/mod/semver"
 
 	"github.com/brycensranch/go-aptabase/pkg/aptabase/v1"
@@ -127,7 +128,7 @@ var (
 func main() {
 	execDir, err := os.Executable()
 	if err != nil {
-		fmt.Println("Error getting executable path:", err)
+		log.Println("Error getting executable path:", err)
 		return
 	}
 	execDir = filepath.Dir(execDir) // Get the directory where the executable is located
@@ -138,9 +139,9 @@ func main() {
 	}
 	logDir := filepath.Dir(logFilePath)
 
-	err = os.MkdirAll(filepath.Dir(logFilePath), 0755)
+	err = os.MkdirAll(filepath.Dir(logFilePath), 0o755)
 	if err != nil {
-		fmt.Println("Error creating directory:", err)
+		log.Println("Error creating directory:", err)
 		return
 	}
 
@@ -158,8 +159,7 @@ func main() {
 			if err != nil {
 				log.Printf("Couldn't read %s. Not attempting to append it with latest.log from today.", backupLogPath)
 			} else {
-			// append
-			os.WriteFile(backupLogPath, combinedLogFileBytes, 0755)
+				os.WriteFile(backupLogPath, combinedLogFileBytes, 0o755)
 			}
 		} else {
 			// Rename the current latest.log to the new file
@@ -171,10 +171,9 @@ func main() {
 		}
 		log.Printf("Renamed **OLD** latest.log to %s\n", backupLogPath)
 	}
-	// Open a log file (in append mode).
-	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o666)
+	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o755)
 	if err != nil {
-		fmt.Println("Error opening rokon log file:", err)
+		log.Println("Error opening rokon log file:", err)
 		return
 	}
 	defer logFile.Close()
@@ -193,6 +192,30 @@ func main() {
 	telemetryLogger := log.New(logFile, "TELEMETRY: ", log.Ldate|log.Ltime|log.Lshortfile)
 	log.Printf("Log file: %s", logFilePath)
 	log.Println("Starting Rokon. Now with more telemetry!")
+	viper.SetConfigName("config")
+	viper.SetConfigType("toml")
+	viper.AddConfigPath(".")
+	configDirectoryPath := filepath.Join(xdg.ConfigHome, "rokon")
+	viper.AddConfigPath(configDirectoryPath)
+	viper.AutomaticEnv()
+	for _, dir := range xdg.ConfigDirs {
+		viper.AddConfigPath(dir)
+	}
+	viper.SetEnvPrefix("rokon") // will be uppercased automatically
+	viper.SetDefault("telemetry", (telemetryOnByDefault == "1" || telemetryOnByDefault == "true"))
+	viper.SetDefault("scanOnStartup", true)
+
+	err = viper.ReadInConfig() // Find and read the config file
+	if err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			viper.WriteConfigAs(filepath.Join(configDirectoryPath, "config.toml")) // Deploy the default config!
+		} else {
+			// Handle errors reading the config file
+			panic(fmt.Errorf("fatal error reading config file: %w", err))
+		}
+	}
+	telemetry := viper.GetBool("telemetry")
+	if telemetry {
 	switch runtime.GOOS {
 	case "windows", "darwin":
 		telemetryLogger.Println("Running on Windows or macOS.")
@@ -240,14 +263,19 @@ func main() {
 
 		log.Println("Detected package format:", packageFormat)
 	}
+}
 
 	app := gtk.NewApplication("io.github.brycensranch.Rokon", gio.ApplicationFlagsNone)
+	if telemetry {
 	aptabaseClient = aptabase.NewClient("A-US-0332858461", version, uint64(133), false, "")
 	aptabaseClient.Logger = telemetryLogger
+	}
 	if version != "" {
 		app.SetVersion(version)
 	}
 	log.Printf("Version %s commit %s branch %s (built on %s)\n", version, commit, branch, date)
+	if telemetry {
+
 	switch runtime.GOOS {
 	case "linux":
 		release := getOSRelease()
@@ -290,12 +318,9 @@ func main() {
 
 			if firejail {
 				telemetryLogger.Println("Running from an AppImage with firejail")
-				// Adjust telemetry or other settings as needed.
 			}
 
 			createEvent("appimage_run", map[string]interface{}{
-				// The APPIAMGE variable often points to the user's /home/identifyingrealname/Applications
-				// So strip that data out
 				"appimage":           filepath.Base(appImage),
 				"appimageVersion":    version, // Replace with your app version logic
 				"firejail":           firejail,
@@ -348,14 +373,17 @@ func main() {
 			"packageFormat": packageFormat,
 		})
 	}
+}
 	app.ConnectActivate(func() { activate(app) })
 	app.ConnectCommandLine(func(commandLine *gio.ApplicationCommandLine) int {
 		return activateCommandLine(app, commandLine)
 	})
+	if telemetry {
 	// Flush buffered events before the program terminates.
 	// Set the timeout to the maximum duration the program can afford to wait.
 	aptabaseClient.Quit = true
 	aptabaseClient.Stop()
+	}
 	if code := app.Run(os.Args); code > 0 {
 		os.Exit(code)
 	}
@@ -367,7 +395,7 @@ func activateCommandLine(_ *gtk.Application, commandLine *gio.ApplicationCommand
 	for _, arg := range args {
 		if arg == "version" || arg == "--version" {
 			// Print version info
-			fmt.Println(applicationInfo())
+			log.Println(applicationInfo())
 			return 0 // Return 0 to indicate success
 		}
 	}
@@ -616,7 +644,7 @@ func fetchImageAsPaintable(url string) (string, error) {
 func activate(app *gtk.Application) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
-		fmt.Println("Error fetching network interfaces:", err)
+		log.Println("Error fetching network interfaces:", err)
 		return
 	}
 
@@ -689,8 +717,19 @@ func activate(app *gtk.Application) {
 	window.AddController(gestureClick)
 
 	// window.Maximize()
+	scanOnStartup := viper.GetBool("scanOnStartup")
 	// Start searching for Rokus when the app is activated
-	rokuChan := searchForRokus()
+	var rokuChan chan []ssdp.Service
+	if scanOnStartup {
+		rokuChan = searchForRokus()
+		} else {
+			// Empty!
+			rokuChan = make(chan []ssdp.Service)
+			log.Printf("scanOnStartup is FALSE. Not scanning for Rokus.")
+			glib.IdleAdd(func() {
+				window.SetChild(&gtk.NewLabel("Welcome to Rokon, to get started, enter your Roku's IP address.\nTo get it's IP address, go into Settings -> Network").Widget)
+			})
+		}
 
 	// Goroutine that waits for Roku discovery to finish
 	go func() {
@@ -719,15 +758,15 @@ func activate(app *gtk.Application) {
 				Get(discoveredRokus[0].Location + "/")
 
 			if err != nil {
-				fmt.Println("Error:", err)
+				log.Println("Error:", err)
 			} else {
-				fmt.Println("Trace Info:", resp.Request.TraceInfo())
-				fmt.Println("Status Code:", resp.StatusCode())
-				fmt.Println("Status:", resp.Status())
-				fmt.Println("Proto:", resp.Proto())
-				fmt.Println("Time:", resp.Time())
-				fmt.Println("Received At:", resp.ReceivedAt())
-				fmt.Println("Body:", resp)
+				log.Println("Trace Info:", resp.Request.TraceInfo())
+				log.Println("Status Code:", resp.StatusCode())
+				log.Println("Status:", resp.Status())
+				log.Println("Proto:", resp.Proto())
+				log.Println("Time:", resp.Time())
+				log.Println("Received At:", resp.ReceivedAt())
+				log.Println("Body:", resp)
 			}
 
 			notification := gio.NewNotification("Roku discovered")

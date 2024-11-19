@@ -35,7 +35,7 @@ dmg/
 *.run*
 ./shellc*
 
-
+config.toml
 data
 remote.go
 changelog_reader.go
