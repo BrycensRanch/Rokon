@@ -10,12 +10,8 @@ require (
 	github.com/go-resty/resty/v2 v2.16.0
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20241025222116-6b205f073fdd
 	github.com/koron/go-ssdp v0.0.4
+	github.com/spf13/viper v1.19.0
 	golang.org/x/mod v0.22.0
-)
-
-require (
-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 )
 
 require (
@@ -31,7 +27,6 @@ require (
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.19.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
