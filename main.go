@@ -669,7 +669,7 @@ func activate(app *gtk.Application) {
 		}
 
 		// Print interface details
-		fmt.Printf("Interface: %s, Status: %s, Type: %s\n", iface.Name, status, ifaceType)
+		log.Printf("Interface: %s, Status: %s, Type: %s\n", iface.Name, status, ifaceType)
 	}
 
 	window := gtk.NewApplicationWindow(app)
@@ -692,12 +692,12 @@ func activate(app *gtk.Application) {
 	window.AddController(keyController)
 
 	keyController.Connect("key-pressed", func(controller *gtk.EventControllerKey, code uint) {
-		println(controller.Name() + " " + strconv.FormatUint(uint64(code), 10))
+		log.Println(controller.Name() + " " + strconv.FormatUint(uint64(code), 10))
 		const (
 			RightClickCode = uint(93) // Code representing a right-click
 		)
 		if code == RightClickCode {
-			println("right clicked")
+			log.Println("right clicked")
 		}
 	})
 
@@ -705,7 +705,7 @@ func activate(app *gtk.Application) {
 	focusController.SetName("focusController")
 
 	focusController.Connect("enter", func() {
-		println("Keyboard focus entered!")
+		log.Println("Keyboard focus entered!")
 	})
 	window.AddController(focusController)
 
