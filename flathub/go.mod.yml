@@ -23,10 +23,10 @@
   type: archive
   url: https://proxy.golang.org/github.com/diamondburned/gotk4/pkg/@v/v0.3.1.zip
 - dest: vendor/github.com/go-resty/resty/v2
-  sha256: 59d602cd4adae6e66f867932a0b4e7103ad4a4a970010ae6c8c0529baded7526
+  sha256: 8d420e548eb4416e117fef8d2b83cdfb6de780b84bc24c3af9880d08e58cc9dd
   strip-components: 4
   type: archive
-  url: https://proxy.golang.org/github.com/go-resty/resty/v2/@v/v2.15.3.zip
+  url: https://proxy.golang.org/github.com/go-resty/resty/v2/@v/v2.16.0.zip
 - dest: vendor/github.com/ianlancetaylor/cgosymbolizer
   sha256: 75f17cd2577f75be47c7f7c4fd6e168b7b02e454ef2e5071a7430d17998ec559
   strip-components: 3
