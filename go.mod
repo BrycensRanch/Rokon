@@ -10,6 +10,7 @@ require (
 	github.com/go-resty/resty/v2 v2.16.0
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20241025222116-6b205f073fdd
 	github.com/koron/go-ssdp v0.0.4
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
 	golang.org/x/mod v0.22.0
@@ -28,7 +29,6 @@ require (
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
-	github.com/spf13/cobra v1.8.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
