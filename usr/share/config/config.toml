@@ -1,0 +1,27 @@
+# :::::::..       ...      :::  .      ...   :::.    :::.
+# ;;;;``;;;;   .;;;;;;;.   ;;; .;;,..;;;;;;;.`;;;;,  `;;;
+#  [[[,/[[['  ,[[     \[[, [[[[[/' ,[[     \[[,[[[[[. '[[
+#  $$$$$$c    $$$,     $$$_$$$$,   $$$,     $$$$$$ "Y$c$$
+#  888b "88bo,"888,_ _,88P"888"88o,"888,_ _,88P888    Y88
+#  MMMM   "W"   "YMMMMMP"  MMM "MMP" "YMMMMMP" MMM     YM
+
+# https://github.com/BrycensRanch/Rokon
+
+
+# Configuration file derived from Rokon 1.0.0
+
+# If you want, you can override these values at runtime with environment variables.
+# For example, you can do ROKON_TELEMETRY=0 OR ROKON_TELEMETRY=false
+# This can be applied with ROKON_TELEMETRY=0 ./Rokon-1.0.0-x86_64.AppImage
+# But that only lasts until you stop running the command with that environment variable.
+
+# Configuration values can be set with ./Rokon-1.0.0-x86_64.AppImage config telemetry=false
+
+
+# You should have recieved a copy of Rokon's Privacy Policy in /usr/share/doc/rokon/PRIVACY.md OR share/doc/rokon/PRIVACY.md
+# If not, you can view it here: https://github.com/BrycensRanch/Rokon/blob/master/PRIVACY.md
+telemetry = true
+
+# When Rokon doesn't have any known Rokus, it attempts to communicate with connected Rokus on your network via SSDP.
+# This was added as a option for a use case I can't really forsee.
+scanOnStartup = true
