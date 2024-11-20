@@ -443,7 +443,7 @@ build: ## go build -v -o rokon
 			echo "cgosymbolizer_linux.go is not supported for your CPU architecture. As such, it's been removed from the build. Do not commit this change to git."; \
 		fi; \
 	fi
-	go build -v -ldflags="-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.packaged=$(PACKAGED) -X main.packageFormat=$(PACKAGEFORMAT) -X main.branch=$(BRANCH) $(EXTRALDFLAGS)" $(EXTRAGOFLAGS) -o $(TARGET) -tags "$(BUILDTAGS)" .
+	go build -v -ldflags="-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.packaged=$(PACKAGED) -X main.packageFormat=$(PACKAGEFORMAT) -X main.branch=$(BRANCH) -X main.date=$(DATE) $(EXTRALDFLAGS)" $(EXTRAGOFLAGS) -o $(TARGET) -tags "$(BUILDTAGS)" .
 
 .PHONY: spell
 spell: ## misspell
