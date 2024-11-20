@@ -68,6 +68,7 @@ parts:
       go mod download all
       make VERSION=$SNAPCRAFT_PROJECT_VERSION PACKAGED=true PACKAGEFORMAT=snap build
       make DESTDIR=$SNAPCRAFT_PART_INSTALL PREFIX=/usr install
+      ./rokon --version
     build-snaps: [go/latest/stable, gnome-46-2404-sdk/latest/edge]
     build-packages:
       - git
