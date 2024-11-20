@@ -6,25 +6,24 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"strconv"
 
 	"github.com/brycensranch/go-aptabase/pkg/aptabase/v1"
 	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 )
 
-var aptabaseClient *aptabase.Client // Package-level variable
+var aptabaseClient *aptabase.Client
 
-
-func doTelemetry(telemetryLogger *log.Logger, app *gtk.Application, execDir string) {
-	aptabaseClient := aptabase.NewClient("A-US-0332858461", version, uint64(133), false, "")
-	// aptabaseClient.Logger = telemetryLogger
+func doTelemetry(telemetryLogger log.Logger, app *gtk.Application, execDir string) {
+	aptabaseClient = aptabase.NewClient("A-US-0332858461", version, uint64(133), false, "")
+	aptabaseClient.Logger = &telemetryLogger
 
 	if packageFormat == "detect" {
-		_, err := os.Stat("/.dockerenv")
 
 		switch {
 		case os.Getenv("APPIMAGE") != "":
 			packageFormat = "AppImage"
-		case err == nil:
+		case fileExists("/.dockerenv"):
 			packageFormat = "docker"
 		case os.Getenv("CONTAINER") == "oci":
 			packageFormat = "docker"
@@ -50,7 +49,6 @@ func doTelemetry(telemetryLogger *log.Logger, app *gtk.Application, execDir stri
 				packageFormat = string(content)
 			}
 		default:
-			// Set to "native" if no valid package format is detected
 			packageFormat = "native"
 		}
 
@@ -71,7 +69,7 @@ func doTelemetry(telemetryLogger *log.Logger, app *gtk.Application, execDir stri
 		telemetryLogger.Printf("Running on Linux. Specifically: %s %s with %s %s %s and %s\n",
 			release, arch, desktop, os.Getenv("DESKTOP_SESSION"), kdeSessionVersion, sessionType)
 
-		createEvent("linux_run", map[string]interface{}{
+		sendEvent("linux_run", map[string]interface{}{
 			"arch":           arch,
 			"desktop":        desktop,
 			"desktopVersion": kdeSessionVersion,
@@ -82,15 +80,15 @@ func doTelemetry(telemetryLogger *log.Logger, app *gtk.Application, execDir stri
 		container := os.Getenv("container")
 		if container != "" && container == "flatpak" {
 			telemetryLogger.Println("Running from a Flatpak")
-			createEvent("flatpak_run", map[string]interface{}{
+			sendEvent("flatpak_run", map[string]interface{}{
 				"flatpak":        container,
-				"flatpakVersion": version, // Replace with your app version logic
+				"flatpakVersion": version,
 			})
 		} else if snap := os.Getenv("SNAP"); snap != "" {
 			telemetryLogger.Println("Running from a Snap")
-			createEvent("snap_run", map[string]interface{}{
+			sendEvent("snap_run", map[string]interface{}{
 				"snap":        snap,
-				"snapVersion": version, // Replace with your app version logic
+				"snapVersion": version,
 			})
 		} else if appImage := os.Getenv("APPIMAGE"); appImage != "" {
 			telemetryLogger.Println("Running from an AppImage")
@@ -100,16 +98,16 @@ func doTelemetry(telemetryLogger *log.Logger, app *gtk.Application, execDir stri
 				telemetryLogger.Println("Running from an AppImage with firejail")
 			}
 
-			createEvent("appimage_run", map[string]interface{}{
+			sendEvent("appimage_run", map[string]interface{}{
 				"appimage":           filepath.Base(appImage),
-				"appimageVersion":    version, // Replace with your app version logic
+				"appimageVersion":    version,
 				"firejail":           firejail,
 				"desktopIntegration": os.Getenv("DESKTOPINTEGRATION"),
 			})
 		} else if isPackaged == "true" {
 			telemetryLogger.Println("Running from a native package")
-			createEvent("native_run", map[string]interface{}{
-				"nativeVersion": version, // Replace with your app version logic
+			sendEvent("native_run", map[string]interface{}{
+				"nativeVersion": version,
 				"path":          path.Base(os.Args[0]),
 				"packageFormat": packageFormat,
 			})
@@ -124,9 +122,9 @@ func doTelemetry(telemetryLogger *log.Logger, app *gtk.Application, execDir stri
 			telemetryLogger.Println("Running from a portable executable")
 		}
 
-		createEvent("windows_run", map[string]interface{}{
+		sendEvent("windows_run", map[string]interface{}{
 			"arch":          arch,
-			"version":       version, // Replace with your app version logic
+			"version":       version,
 			"packageFormat": packageFormat,
 		})
 	case "darwin":
@@ -135,27 +133,58 @@ func doTelemetry(telemetryLogger *log.Logger, app *gtk.Application, execDir stri
 		telemetryLogger.Printf("Running on macOS. Specifically: %s %s\n",
 			release, arch)
 
-		createEvent("macos_run", map[string]interface{}{
+		sendEvent("macos_run", map[string]interface{}{
 			"arch":          arch,
 			"mas":           os.Getenv("MAS"),
-			"version":       version, // Replace with your app version logic
+			"version":       version,
 			"path":          path.Base(os.Args[0]),
 			"packageFormat": packageFormat,
 		})
 	default:
 		telemetryLogger.Printf("Unsupported telemetry platform: %s %s %s. However, the application will continue.\n",
 			runtime.GOOS, getOSRelease(), runtime.GOARCH)
-		createEvent("unsupported_platform", map[string]interface{}{
+		sendEvent("unsupported_platform", map[string]interface{}{
 			"platform":      runtime.GOOS,
 			"arch":          runtime.GOARCH,
-			"version":       version, // Replace with your app version logic
+			"version":       version,
 			"path":          path.Base(os.Args[0]),
 			"packageFormat": packageFormat,
 		})
 	}
 	// Flush buffered events before the program terminates.
-	// Set the timeout to the maximum duration the program can afford to wait.
 	defer aptabaseClient.Stop()
+}
+
+func monitorForUserActivity(window *gtk.ApplicationWindow) {
+	// Event controller setup
+	keyController := gtk.NewEventControllerKey()
+	keyController.SetName("keyController")
+	window.AddController(keyController)
+
+	keyController.Connect("key-pressed", func(controller *gtk.EventControllerKey, code uint) {
+		log.Println(controller.Name() + " " + strconv.FormatUint(uint64(code), 10))
+		const (
+			RightClickCode = uint(93) // Code representing a right-click
+		)
+		if code == RightClickCode {
+			log.Println("right clicked")
+		}
+	})
+
+	focusController := gtk.NewEventControllerFocus()
+	focusController.SetName("focusController")
+
+	focusController.Connect("enter", func() {
+		log.Println("Keyboard focus entered!")
+	})
+	window.AddController(focusController)
+
+	gestureClick := gtk.NewGestureClick()
+	gestureClick.SetName("gestureClick")
+	gestureClick.Connect("pressed", func(_, numberOfPresses uint) {
+		log.Printf("Number of presses %v", numberOfPresses)
+	})
+	window.AddController(gestureClick)
 }
 
 func isRunningWithFirejail() bool {
@@ -165,7 +194,7 @@ func isRunningWithFirejail() bool {
 		(appDir != "" && contains(appDir, "/run/firejail"))
 }
 
-func createEvent(eventName string, eventData map[string]interface{}) {
+func sendEvent(eventName string, eventData map[string]interface{}) {
 	event := aptabase.EventData{
 		EventName: eventName,
 		Props:     eventData,
