@@ -36,6 +36,7 @@ modules:
       - make PACKAGED=true PACKAGEFORMAT=flatpak EXTRAGOFLAGS="-mod=vendor -trimpath" build
       - desktop-file-edit --set-key=Exec --set-value=$GOBIN/rokon usr/share/applications/$FLATPAK_ID.desktop
       - make PREFIX=/app BINDIR=$GOBIN install
+      - ./rokon --version
     sources:
       - type: git
         url: https://github.com/BrycensRanch/Rokon
