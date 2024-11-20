@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,8 +53,8 @@ func showDialog(title, message string, app *gtk.Application) {
 	dialog.SetApplication(app)
 	dialog.SetModal(true)
 	dialog.SetChild(gtk.NewLabel(message))
-	theWindow.Show()
-	dialog.Show()
+	theWindow.Present()
+	dialog.Present()
 }
 
 func fetchImageAndDownload(url string) (string, error) {
@@ -110,8 +111,60 @@ func getOSRelease() string {
 }
 
 func fileExists(path string) bool {
-	if _, err := os.Stat(path); err == nil {
-		return true
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
+}
+
+func getCurrentWorkingDir() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error getting current working directory:", err)
+		return ""
 	}
-	return false
+	return dir
+}
+
+func expandUserDirectory(path string) (string, error) {
+	// Replace ~ with the user's home directory
+	if path[:2] == "~/" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		return filepath.Join(homeDir, path[2:]), nil
+	}
+	return path, nil
+}
+
+func findLogoFilePath() (string, error) {
+	// List of potential paths to check based on the OS
+	var potentialPaths []string
+
+	// Start with relative path (current directory or resources directory)
+	potentialPaths = append(potentialPaths, "./io.github.brycensranch.Rokon.svg")
+	potentialPaths = append(potentialPaths, "share/icons/hicolor/scalable/apps/io.github.brycensranch.Rokon.svg")
+	potentialPaths = append(potentialPaths, "usr/share/icons/hicolor/scalable/apps/io.github.brycensranch.Rokon.svg")
+	potentialPaths = append(potentialPaths, "share/Rokon/io.github.brycensranch.Rokon.svg")
+	potentialPaths = append(potentialPaths, "share/icons/io.github.brycensranch.Rokon.svg")
+
+	// Expand user directories like ~
+	for _, path := range potentialPaths {
+		expandedPath, err := expandUserDirectory(path)
+		if err != nil {
+			return "", err
+		}
+
+		// Get the absolute path based on the current working directory (if relative)
+		if !filepath.IsAbs(expandedPath) {
+			expandedPath = filepath.Join(getCurrentWorkingDir(), expandedPath)
+		}
+		log.Printf("Checking path %s for Rokon SVG Logo", expandedPath)
+		// Check if the file exists at this location
+		if _, err := os.Stat(expandedPath); err == nil {
+			log.Printf("HIT! found at %s", expandedPath)
+			return expandedPath, nil
+		}
+	}
+
+	return "", fmt.Errorf("SVG logo not found in any known location")
 }
