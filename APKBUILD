@@ -17,7 +17,7 @@ makedepends="
 subpackages="
 	$pkgname-doc
 	"
-source="https://nightly.link/BrycensRanch/Rokon/actions/runs/11875401640/rokon-vendored-source.zip"
+source="https://nightly.link/BrycensRanch/Rokon/actions/runs/11943137586/rokon-vendored-source.zip"
 
 
 build() {
@@ -34,5 +34,5 @@ package() {
 }
 
 sha512sums="
-a8f99e1b8d2cebc6e2dc10c9e043432901d992bff89afc4ae96a4e8d35c45006948838b129c3cb45ddaab99c5bd5127f6ce50b9a248e98348fdd5ccebb901bfe rokon-vendored-source.zip
+6e1f3fffc4504ab9fd63d3820476d7f6d14f39323738cabe0423deb99146011a8e99bbf59d7549bbffb56f297b45ade0bc6f8595bc8e8712e0e219bcaf5b3d09 rokon-vendored-source.zip
 "
