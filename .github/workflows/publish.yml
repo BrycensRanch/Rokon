@@ -337,7 +337,7 @@ jobs:
           sudo snap install yq
       - name: Install Snapcraft
         if: ${{ github.event_name == 'pull_request' }}
-        uses: samuelmeuli/action-snapcraft@v2
+        uses: samuelmeuli/action-snapcraft@v3
       - name: Extract branch name
         shell: bash
         if: ${{ github.event_name == 'pull_request' }}
