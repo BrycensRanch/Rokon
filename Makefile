@@ -357,7 +357,7 @@ dmg: ## go mod tidy
 	$(call print-target)
 	mkdir -p $(MACOSDIR)/lib/gdk-pixbuf-2.0 $(MACOSDIR)/share/glib-2.0/schemas $(MACOSDIR)/share/icons
 	cp README.md PRIVACY.md LICENSE.md $(MACOSDIR)
-	brew_prefix=$(brew --prefix)
+	brew_prefix=$$(brew --prefix)
 	dylibbundler -b -d $(MACOSDIR)/lib -x $(MACOSDIR)/rokon
 	cp -f $brew_prefix/lib/*.dylib $(MACOSDIR)/lib
 	cp -r $brew_prefix/lib/gdk-pixbuf-2.0 $(MACOSDIR)/lib
