@@ -35,7 +35,7 @@ dmg/
 *.run*
 ./shellc*
 
-config.toml
+./config.toml
 qt6
 data
 remote.go
