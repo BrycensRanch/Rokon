@@ -661,28 +661,7 @@ jobs:
       # Attribution: https://github.com/getseabird/seabird/blob/main/.github/workflows/release.yaml#L194
       # Word for Word, bar for bar.
       - name: 🗿 Produce DMG
-        run: |
-          result=./macos
-          brew_prefix=$(brew --prefix)
-          mkdir -p $result/lib/gdk-pixbuf-2.0 $result/share/glib-2.0/schemas $result/share/icons
-          cp README.md PRIVACY.md LICENSE.md $result
-          dylibbundler -b -d $result/lib -x $result/rokon
-          cp -f $brew_prefix/lib/*.dylib $result/lib
-          cp -r $brew_prefix/lib/gdk-pixbuf-2.0 $result/lib
-          sed -i '' "s|$brew_prefix/||" $result/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
-          cp -r $brew_prefix/share/glib-2.0/schemas $result/share/glib-2.0
-          cp -r $brew_prefix/opt/gtk4/share/gtk-4.0 $result/share
-          cp -r $brew_prefix/share/icons/hicolor $result/share/icons
-          mkdir -p $result/dmg/Rokon.app/Contents/MacOS $result/dmg/Rokon.app/Contents/Resources
-          cp macos/icon.icns $result/dmg/Rokon.app/Contents/Resources
-          cp macos/io.github.BrycensRanch.Rokon.plist $result/dmg/Rokon.app/Contents
-          rsync -a --exclude "$result/dmg/" "$result/" "$result/dmg/Rokon.app/Contents/MacOS"
-
-          set +e
-          false
-          while [ $? -ne 0 ]; do
-            create-dmg --volname Rokon --volicon macos/icon.icns --window-size 600 400 --icon-size 100 --icon "Rokon.app" 200 150 --hide-extension "Rokon.app" --app-drop-link 400 150 Rokon_macOS_x86_64.dmg $result/dmg
-          done
+        run: make dmg
       - name: Find and mount DMG
         id: mount-dmg
         run: |
