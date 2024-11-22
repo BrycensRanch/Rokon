@@ -42,6 +42,11 @@
   strip-components: 3
   type: archive
   url: https://proxy.golang.org/github.com/spf13/cobra/@v/v1.8.1.zip
+- dest: vendor/github.com/spf13/pflag
+  sha256: fc6e704f2f6a84ddcdce6de0404e5340fa20c8676181bf5d381b17888107ba84
+  strip-components: 3
+  type: archive
+  url: https://proxy.golang.org/github.com/spf13/pflag/@v/v1.0.5.zip
 - dest: vendor/github.com/spf13/viper
   sha256: 5b773a712a646ff2f1bca4c45d50853e881ad8f6c363ca30fab1c4a9b19e59b2
   strip-components: 3
@@ -117,11 +122,6 @@
   strip-components: 3
   type: archive
   url: https://proxy.golang.org/github.com/spf13/cast/@v/v1.6.0.zip
-- dest: vendor/github.com/spf13/pflag
-  sha256: fc6e704f2f6a84ddcdce6de0404e5340fa20c8676181bf5d381b17888107ba84
-  strip-components: 3
-  type: archive
-  url: https://proxy.golang.org/github.com/spf13/pflag/@v/v1.0.5.zip
 - dest: vendor/github.com/subosito/gotenv
   sha256: 142db3dd2328e744c157e85cf3291d027013b79f92a45984f860fe38bc0f1f8d
   strip-components: 3
