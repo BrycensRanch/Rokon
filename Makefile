@@ -70,6 +70,7 @@ TARBALLDIR ?= ./tarball
 MACOSDIR ?= ./macos
 SANITYCHECK ?= 1
 RUNDIR ?= ./run
+DMGDIR ?= $(MACOSDIR)/dmg
 RUNLIBS ?= $(RUNDIR)/libs
 ABS_RUNDIR := $(shell realpath $(RUNDIR))
 # Check if selfextract exists in the PATH
@@ -359,19 +360,17 @@ dmg: ## go mod tidy
 	cp README.md PRIVACY.md LICENSE.md $(MACOSDIR)
 	brew_prefix=$$(brew --prefix)
 	dylibbundler -b -d $(MACOSDIR)/lib -x $(MACOSDIR)/rokon
-	cp -r $$brew_prefix/lib/gdk-pixbuf-2.0 $(MACOSDIR)/lib
-	sed -i '' "s|$$brew_prefix/||" $(MACOSDIR)/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
 	cp -r $$brew_prefix/opt/gtk4/share/gtk-4.0 $(MACOSDIR)/share
 	cp -r $$brew_prefix/share/icons/hicolor $(MACOSDIR)/share/icons
-	mkdir -p $(MACOSDIR)/dmg/Rokon.app/Contents/MacOS $(MACOSDIR)/dmg/Rokon.app/Contents/Resources
-	cp $(MACOSDIR)/icon.icns $(MACOSDIR)/dmg/Rokon.app/Contents/Resources
-	cp $(MACOSDIR)/io.github.BrycensRanch.Rokon.plist $(MACOSDIR)/dmg/Rokon.app/Contents
-	rsync -a --exclude "$(MACOSDIR)/dmg/" "$(MACOSDIR)/" "$(MACOSDIR)/dmg/Rokon.app/Contents/MacOS"
+	mkdir -p $(DMGDIR)/Rokon.app/Contents/MacOS $(DMGDIR)/Rokon.app/Contents/Resources
+	cp $(MACOSDIR)/icon.icns $(DMGDIR)/Rokon.app/Contents/Resources
+	cp $(MACOSDIR)/io.github.BrycensRanch.Rokon.plist $(DMGDIR)/Rokon.app/Contents
+	rsync -a --exclude "$(DMGDIR)/" "$(MACOSDIR)/" "$(DMGDIR)/Rokon.app/Contents/MacOS"
 
 	set +e
 	false
 	while [ $? -ne 0 ]; do
-		create-dmg --volname Rokon --volicon $(MACOSDIR)/icon.icns --window-size 600 400 --icon-size 100 --icon "Rokon.app" 200 150 --hide-extension "Rokon.app" --app-drop-link 400 150 $(DMG_NAME) $(MACOSDIR)/dmg
+		create-dmg --volname Rokon --volicon $(MACOSDIR)/icon.icns --window-size 600 400 --icon-size 100 --icon "Rokon.app" 200 150 --hide-extension "Rokon.app" --app-drop-link 400 150 $(DMG_NAME) $(DMGDIR)
 	done
 .PHONY: inst
 inst: ## go install tools
