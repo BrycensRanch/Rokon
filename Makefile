@@ -103,7 +103,7 @@ TBLIBSDIR ?= $(TARBALLDIR)/libs
 TAR_NAME ?= Rokon-$(UNAME_S)-$(VERSION)-$(ARCH).tar.gz
 # Unix* users know .run is for them. DO NOT include it in the filename!
 RUNFILE_NAME ?= Rokon-$(VERSION)-$(ARCH).run
-
+DMG_NAME ?= Rokon-$(VERSION)-$(ARCH).dmg
 
 make_wrapper_script = \
 	echo '\#!/bin/sh' > $1/$(TARGET); \
@@ -359,12 +359,10 @@ dmg: ## go mod tidy
 	cp README.md PRIVACY.md LICENSE.md $(MACOSDIR)
 	brew_prefix=$$(brew --prefix)
 	dylibbundler -b -d $(MACOSDIR)/lib -x $(MACOSDIR)/rokon
-	cp -f $brew_prefix/lib/*.dylib $(MACOSDIR)/lib
-	cp -r $brew_prefix/lib/gdk-pixbuf-2.0 $(MACOSDIR)/lib
-	sed -i '' "s|$brew_prefix/||" $(MACOSDIR)/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
-	cp -r $brew_prefix/share/glib-2.0/schemas $(MACOSDIR)/share/glib-2.0
-	cp -r $brew_prefix/opt/gtk4/share/gtk-4.0 $(MACOSDIR)/share
-	cp -r $brew_prefix/share/icons/hicolor $(MACOSDIR)/share/icons
+	cp -r $$brew_prefix/lib/gdk-pixbuf-2.0 $(MACOSDIR)/lib
+	sed -i '' "s|$$brew_prefix/||" $(MACOSDIR)/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
+	cp -r $$brew_prefix/opt/gtk4/share/gtk-4.0 $(MACOSDIR)/share
+	cp -r $$brew_prefix/share/icons/hicolor $(MACOSDIR)/share/icons
 	mkdir -p $(MACOSDIR)/dmg/Rokon.app/Contents/MacOS $(MACOSDIR)/dmg/Rokon.app/Contents/Resources
 	cp $(MACOSDIR)/icon.icns $(MACOSDIR)/dmg/Rokon.app/Contents/Resources
 	cp $(MACOSDIR)/io.github.BrycensRanch.Rokon.plist $(MACOSDIR)/dmg/Rokon.app/Contents
@@ -373,7 +371,7 @@ dmg: ## go mod tidy
 	set +e
 	false
 	while [ $? -ne 0 ]; do
-		create-dmg --volname Rokon --volicon $(MACOSDIR)/icon.icns --window-size 600 400 --icon-size 100 --icon "Rokon.app" 200 150 --hide-extension "Rokon.app" --app-drop-link 400 150 Rokon_macOS_x86_64.dmg $(MACOSDIR)/dmg
+		create-dmg --volname Rokon --volicon $(MACOSDIR)/icon.icns --window-size 600 400 --icon-size 100 --icon "Rokon.app" 200 150 --hide-extension "Rokon.app" --app-drop-link 400 150 $(DMG_NAME) $(MACOSDIR)/dmg
 	done
 .PHONY: inst
 inst: ## go install tools
