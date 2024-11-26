@@ -118,10 +118,10 @@
   type: archive
   url: https://proxy.golang.org/github.com/spf13/afero/@v/v1.11.0.zip
 - dest: vendor/github.com/spf13/cast
-  sha256: ee938d479c19c4cacc5e1bebd71fa5a4d00b84f4d71ee527a96a8adb7e0736e8
+  sha256: 7b24198857474e3f3c9c368fdec153b06003d06863a182c77c0605c3e51002c1
   strip-components: 3
   type: archive
-  url: https://proxy.golang.org/github.com/spf13/cast/@v/v1.6.0.zip
+  url: https://proxy.golang.org/github.com/spf13/cast/@v/v1.7.0.zip
 - dest: vendor/github.com/subosito/gotenv
   sha256: 142db3dd2328e744c157e85cf3291d027013b79f92a45984f860fe38bc0f1f8d
   strip-components: 3
