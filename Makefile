@@ -10,6 +10,7 @@ PACKAGED ?= false
 PACKAGEFORMAT ?=
 NODOCUMENTATION ?= 0
 NOTB ?= 0
+BREW := $(shell brew --prefix)
 EXTRALDFLAGS :=
 EXTRAGOFLAGS :=
 BUILDTAGS :=
@@ -357,11 +358,10 @@ mod: ## go mod tidy
 dmg: ## go mod tidy
 	$(call print-target)
 	mkdir -p $(MACOSDIR)/lib/gdk-pixbuf-2.0 $(MACOSDIR)/share/glib-2.0/schemas $(MACOSDIR)/share/icons
-	cp README.md PRIVACY.md LICENSE.md $(MACOSDIR)
-	brew_prefix=$$(brew --prefix)
+	cp README.md PRIVACY.md LICENSE.md $(MACOSDIR) 
 	dylibbundler -b -d $(MACOSDIR)/lib -x $(MACOSDIR)/rokon
-	cp -r $$brew_prefix/opt/gtk4/share/gtk-4.0 $(MACOSDIR)/share
-	cp -r $$brew_prefix/share/icons/hicolor $(MACOSDIR)/share/icons
+	cp -r $(BREW)/opt/gtk4/share/gtk-4.0 $(MACOSDIR)/share
+	cp -r $(BREW)/share/icons/hicolor $(MACOSDIR)/share/icons
 	mkdir -p $(DMGDIR)/Rokon.app/Contents/MacOS $(DMGDIR)/Rokon.app/Contents/Resources
 	cp $(MACOSDIR)/icon.icns $(DMGDIR)/Rokon.app/Contents/Resources
 	cp $(MACOSDIR)/io.github.BrycensRanch.Rokon.plist $(DMGDIR)/Rokon.app/Contents
