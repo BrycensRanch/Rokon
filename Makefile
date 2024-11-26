@@ -366,12 +366,7 @@ dmg: ## go mod tidy
 	cp $(MACOSDIR)/icon.icns $(DMGDIR)/Rokon.app/Contents/Resources
 	cp $(MACOSDIR)/io.github.BrycensRanch.Rokon.plist $(DMGDIR)/Rokon.app/Contents
 	rsync -a --exclude "$(DMGDIR)/" "$(MACOSDIR)/" "$(DMGDIR)/Rokon.app/Contents/MacOS"
-
-	set +e
-	false
-	while [ $? -ne 0 ]; do
-		create-dmg --volname Rokon --volicon $(MACOSDIR)/icon.icns --window-size 600 400 --icon-size 100 --icon "Rokon.app" 200 150 --hide-extension "Rokon.app" --app-drop-link 400 150 $(DMG_NAME) $(DMGDIR)
-	done
+	create-dmg --volname Rokon --volicon $(MACOSDIR)/icon.icns --window-size 600 400 --icon-size 100 --icon "Rokon.app" 200 150 --hide-extension "Rokon.app" --app-drop-link 400 150 $(DMG_NAME) $(DMGDIR)
 .PHONY: inst
 inst: ## go install tools
 	$(call print-target)
