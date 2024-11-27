@@ -358,7 +358,7 @@ mod: ## go mod tidy
 dmg: ## go mod tidy
 	$(call print-target)
 	mkdir -p $(MACOSDIR)/lib/gdk-pixbuf-2.0 $(MACOSDIR)/share/glib-2.0/schemas $(MACOSDIR)/share/icons
-	$(MAKE) PREFIX=$(MACOSDIR) APPLICATIONSDIR=$(MACOSDIR) install
+	$(MAKE) PREFIX=$(MACOSDIR) BINDIR=$(MACOSDIR) APPLICATIONSDIR=$(MACOSDIR) install
 	dylibbundler -b -d $(MACOSDIR)/lib -x $(MACOSDIR)/rokon
 	cp -r $(BREW)/opt/gtk4/share/gtk-4.0 $(MACOSDIR)/share
 	cp -r $(BREW)/share/icons/hicolor $(MACOSDIR)/share/icons
