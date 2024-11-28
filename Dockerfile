@@ -11,8 +11,7 @@ RUN dnf install -y \
     gtk4-devel \
     gobject-introspection-devel \
     which \
-    clang \
-    upx
+    clang
 RUN dnf clean all
 
 # DO WHATEVER IT TAKES TO BUILD AS FAST AS POSSIBLE!!! TO INFINITY... AND BEYOND
