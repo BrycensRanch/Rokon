@@ -8,7 +8,7 @@ require (
 	github.com/brycensranch/go-aptabase/pkg v0.0.0-20241120185600-e62359824881
 	github.com/diamondburned/gotk4/pkg v0.3.1
 	github.com/go-resty/resty/v2 v2.16.2
-	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20241025222116-6b205f073fdd
+	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20241129212102-9c50ad6b591e
 	github.com/koron/go-ssdp v0.0.4
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
