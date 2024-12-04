@@ -38,69 +38,61 @@ var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Configure settings",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) > 0 {
-			// Parse args as key=value pairs and set them in Viper
-			for _, arg := range args {
-				// Split on the first '=' to get the key and value
-				parts := strings.SplitN(arg, "=", 2)
-				if len(parts) == 2 {
-					key := parts[0]
-					initialValue := parts[1]
-
-					// Determine the correct type for the value and parse it
-					var value interface{}
-					if strings.HasPrefix(initialValue, "[") && strings.HasSuffix(initialValue, "]") {
-						// Remove the square brackets
-						initialValue = initialValue[1 : len(initialValue)-1]
-						// Split the values by commas
-						items := strings.Split(initialValue, ",")
-						// Now parse each item in the list
-						var values []interface{}
-						for _, item := range items {
-							item = strings.TrimSpace(item) // Trim whitespace around items
-							// Try parsing as bool, int, or leave as string
-							if v, err := strconv.ParseBool(item); err == nil {
-								values = append(values, v)
-							} else if v, err := strconv.Atoi(item); err == nil {
-								values = append(values, v)
-							} else if v, err := strconv.ParseFloat(item, 64); err == nil {
-								values = append(values, v)
-							} else {
-								// Otherwise treat it as a string
-								values = append(values, item)
-							}
-						}
-						viper.Set(key, values)
-						fmt.Printf("Set %s=%v\n", key, values)
-					} else {
-						// Try to parse the value as a boolean, integer, or leave as string
-						if v, err := strconv.ParseBool(initialValue); err == nil {
-							value = v
-						} else if v, err := strconv.Atoi(initialValue); err == nil {
-							value = v
-						} else {
-							// If not a bool or int, treat it as a string
-							value = initialValue
-						}
-						// Set the key-value pair in Viper
-					}
-					viper.Set(key, value)
-					viper.WriteConfig()
-					log.Printf("Set %s=%w\n", key, value)
-				} else {
-					log.Printf("Invalid argument format: %s. Use key=value.", arg)
-				}
-			}
-		} else {
+		if len(args) == 0 {
 			allKeys := viper.AllKeys()
 			for _, key := range allKeys {
-				value := viper.Get(key)
-				log.Printf("%s: %v\n", key, value)
+				log.Printf("%s: %v\n", key, viper.Get(key))
 			}
 			log.Printf("You can set configuration values with the syntax of %s %s key=value", cmd.Root().Name(), cmd.Use)
+			return
+		}
+
+		for _, arg := range args {
+			parts := strings.SplitN(arg, "=", 2)
+			if len(parts) != 2 {
+				log.Printf("Invalid argument format: %s. Use key=value.", arg)
+				continue
+			}
+
+			key, initialValue := parts[0], parts[1]
+			var value interface{}
+
+			if strings.HasPrefix(initialValue, "[") && strings.HasSuffix(initialValue, "]") {
+				initialValue = initialValue[1 : len(initialValue)-1]
+				items := strings.Split(initialValue, ",")
+				var values []interface{}
+
+				for _, item := range items {
+					item = strings.TrimSpace(item)
+					values = append(values, parseValue(item))
+				}
+				value = values
+			} else {
+				value = parseValue(initialValue)
+			}
+
+			viper.Set(key, value)
+			if err := viper.WriteConfig(); err != nil {
+				log.Printf("Error writing config: %v", err)
+				continue
+			}
+			log.Printf("Set %s=%v\n", key, value)
 		}
 	},
 }
+
+func parseValue(value string) interface{} {
+	if v, err := strconv.ParseBool(value); err == nil {
+		return v
+	} else if v, err := strconv.Atoi(value); err == nil {
+		return v
+	} else if v, err := strconv.ParseFloat(value, 64); err == nil {
+		return v
+	} else {
+		return value
+	}
+}
+
 
 func activateCommandLine(app *gtk.Application, commandLine *gio.ApplicationCommandLine) int {
 	args := commandLine.Arguments()

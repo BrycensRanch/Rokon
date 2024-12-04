@@ -139,9 +139,9 @@ func activate(app *gtk.Application) {
 			deviceIP, _ := getHostFromLocation(roku.Location)
 			if i > 0 {
 				rokuList = append(rokuList, fmt.Sprintf("Device %d: %v", i+1, deviceIP))
-			} else {
-				rokuList = append(rokuList, fmt.Sprintf("Device at %v", deviceIP))
+				continue;
 			}
+			rokuList = append(rokuList, fmt.Sprintf("Device at %v", deviceIP))
 		}
 		if len(discoveredRokus) > MaxValue {
 			rokuList = append(rokuList, fmt.Sprintf("...and %d more devices", len(discoveredRokus)-MaxValue))
