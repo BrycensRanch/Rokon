@@ -13,10 +13,10 @@
   type: archive
   url: https://proxy.golang.org/github.com/benesch/cgosymbolizer/@v/v0.0.0-20190515212042-bec6fe6e597b.zip
 - dest: vendor/github.com/brycensranch/go-aptabase/pkg
-  sha256: 54c52e4f26df9b777c2dd22cccf5125158674d97b42d06f2d63014082ba499ea
+  sha256: 485277074c4156a1d1fbf8148167c7080900b868cb8506d0aaf1c3711fefa8ca
   strip-components: 4
   type: archive
-  url: https://proxy.golang.org/github.com/brycensranch/go-aptabase/pkg/@v/v0.0.0-20241120185600-e62359824881.zip
+  url: https://proxy.golang.org/github.com/brycensranch/go-aptabase/pkg/@v/v0.0.0-20241205011416-db98050a56de.zip
 - dest: vendor/github.com/diamondburned/gotk4/pkg
   sha256: c9723192c5123d33d85cfbc39631f8246a76f767b44b36fb27f4366e7d8acdcd
   strip-components: 4
@@ -148,10 +148,10 @@
   type: archive
   url: https://proxy.golang.org/golang.org/x/sync/@v/v0.9.0.zip
 - dest: vendor/golang.org/x/sys
-  sha256: e11dcde2289e0d45eabb06ea59aab05080870bab5753f524ed26df23ec8bddee
+  sha256: 0ed47a83fe7d7a7e743e815172bc10c1ac0ed0d31ebb095e75717428e09aa895
   strip-components: 3
   type: archive
-  url: https://proxy.golang.org/golang.org/x/sys/@v/v0.27.0.zip
+  url: https://proxy.golang.org/golang.org/x/sys/@v/v0.28.0.zip
 - dest: vendor/golang.org/x/text
   sha256: 73b665d0df2cca11badc259586ccb0ba1101637d669d7abaafb27b90b7c028af
   strip-components: 3

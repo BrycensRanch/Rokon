@@ -9,7 +9,7 @@ github.com/adrg/xdg/internal/userdirs
 # github.com/benesch/cgosymbolizer v0.0.0-20190515212042-bec6fe6e597b
 ## explicit
 github.com/benesch/cgosymbolizer
-# github.com/brycensranch/go-aptabase/pkg v0.0.0-20241120185600-e62359824881
+# github.com/brycensranch/go-aptabase/pkg v0.0.0-20241205011416-db98050a56de
 ## explicit; go 1.22.0
 github.com/brycensranch/go-aptabase/pkg/aptabase/v1
 github.com/brycensranch/go-aptabase/pkg/device/v1
@@ -148,7 +148,7 @@ golang.org/x/net/publicsuffix
 # golang.org/x/sync v0.9.0
 ## explicit; go 1.18
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.27.0
+# golang.org/x/sys v0.28.0
 ## explicit; go 1.18
 golang.org/x/sys/unix
 golang.org/x/sys/windows
