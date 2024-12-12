@@ -13,7 +13,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
-	golang.org/x/exp v0.0.0-20241210172134-14434422244c
+	golang.org/x/exp v0.0.0-20241210194714-1829a127f884
 	golang.org/x/mod v0.22.0
 )
 
