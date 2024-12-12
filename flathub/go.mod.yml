@@ -53,10 +53,10 @@
   type: archive
   url: https://proxy.golang.org/github.com/spf13/viper/@v/v1.19.0.zip
 - dest: vendor/golang.org/x/exp
-  sha256: 0ae1a1c31e30c96cebc0dbbd77d5c0dcc59325d63ef6cb4d0299e4892fd2c3d2
+  sha256: 1138962b89896262dbb2641db95f869f04ae8a123f9fe4ac5d036d0b9e088286
   strip-components: 3
   type: archive
-  url: https://proxy.golang.org/golang.org/x/exp/@v/v0.0.0-20241210172134-14434422244c.zip
+  url: https://proxy.golang.org/golang.org/x/exp/@v/v0.0.0-20241210194714-1829a127f884.zip
 - dest: vendor/golang.org/x/mod
   sha256: 0d0a96054b32dfa40cec2a2868bf87cdda31e3bb2dac0a5e2218efe3ef3ef3cc
   strip-components: 3

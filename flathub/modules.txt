@@ -127,7 +127,7 @@ go.uber.org/multierr
 # go4.org/unsafe/assume-no-moving-gc v0.0.0-20231121144256-b99613f794b6
 ## explicit; go 1.11
 go4.org/unsafe/assume-no-moving-gc
-# golang.org/x/exp v0.0.0-20241210172134-14434422244c
+# golang.org/x/exp v0.0.0-20241210194714-1829a127f884
 ## explicit; go 1.22.0
 golang.org/x/exp/constraints
 golang.org/x/exp/rand
