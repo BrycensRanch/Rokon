@@ -98,12 +98,16 @@ func activateCommandLine(app *gtk.Application, commandLine *gio.ApplicationComma
 	args := commandLine.Arguments()
 	// cobraArgs := append([]string{rootCmd.Use}, args...)
 	// rootCmd.SetArgs(cobraArgs)
-	viper.BindPFlags(pflag.CommandLine)
+	err := viper.BindPFlags(pflag.CommandLine)
+	if (err != nil) {
+		log.Println("Viper failed to bind the flags to Rokon's configuration.")
+		log.Fatal(err.Error())
+	}
 	initCLI()
 
 	cmd, remainingArgs, err := rootCmd.Find(args[1:])
 	if err != nil {
-		fmt.Println("Error finding command:", err)
+		log.Println("Error finding command:", err)
 		log.Println(rootCmd.UsageString())
 		return 1
 	}
@@ -114,7 +118,7 @@ func activateCommandLine(app *gtk.Application, commandLine *gio.ApplicationComma
 	}
 	cmd.SetArgs(remainingArgs)
 	if err := cmd.Execute(); err != nil {
-		fmt.Println("Error executing command:", err)
+		log.Println("Error executing command:", err)
 		return 1
 	}
 	if len(args) > 1 {
