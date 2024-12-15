@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/adrg/xdg v0.5.3
 	github.com/benesch/cgosymbolizer v0.0.0-20190515212042-bec6fe6e597b
-	github.com/brycensranch/go-aptabase/pkg v0.0.0-20241207163810-75d9dfd0ae5b
+	github.com/brycensranch/go-aptabase/pkg v0.0.0-20241215123031-9fdeca2b741e
 	github.com/diamondburned/gotk4/pkg v0.3.1
 	github.com/go-resty/resty/v2 v2.16.2
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20241129212102-9c50ad6b591e
