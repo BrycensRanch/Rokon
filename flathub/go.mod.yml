@@ -13,10 +13,10 @@
   type: archive
   url: https://proxy.golang.org/github.com/benesch/cgosymbolizer/@v/v0.0.0-20190515212042-bec6fe6e597b.zip
 - dest: vendor/github.com/brycensranch/go-aptabase/pkg
-  sha256: 09bb5881608dd6207aee7ee173d16e784825f2cabdb4fe51080df0b0d764cad6
+  sha256: 2ecc717569d29e7c17ef6222378b051450a901158e6e1712ccf26897b6c630e2
   strip-components: 4
   type: archive
-  url: https://proxy.golang.org/github.com/brycensranch/go-aptabase/pkg/@v/v0.0.0-20241207163810-75d9dfd0ae5b.zip
+  url: https://proxy.golang.org/github.com/brycensranch/go-aptabase/pkg/@v/v0.0.0-20241215123031-9fdeca2b741e.zip
 - dest: vendor/github.com/diamondburned/gotk4/pkg
   sha256: c9723192c5123d33d85cfbc39631f8246a76f767b44b36fb27f4366e7d8acdcd
   strip-components: 4
