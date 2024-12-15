@@ -59,13 +59,13 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/386, linux/amd64, linux/arm, linux/aarch64, linux/ppc64le, linux/riscv64, linux/s390x
+          platforms: linux/386, linux/amd64, linux/arm, linux/aarch64, linux/riscv64
           file: multiarch.Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Extract tarball from each platform
         run: |
-          platforms=("linux/386" "linux/amd64" "linux/arm" "linux/aarch64" "linux/ppc64le" "linux/riscv64" "linux/s390x")
+          platforms=("linux/386" "linux/amd64" "linux/arm" "linux/aarch64" "linux/riscv64")
 
 
           version=$(make version | awk '{print $2}')
@@ -134,15 +134,15 @@ jobs:
                 ;;
             esac
 
-            TARBALLDIR="./tarball/${PLATFORM}/app"
+            RUNDIR="./tarball/${PLATFORM}/app"
 
-            mkdir -p $TARBALLDIR
+            mkdir -p $RUNDIR
 
-            make TARBALLDIR=$TARBALLDIR ARCH=$ARCH basedimage
+            make RUNDIR=$RUNDIR ARCH=$ARCH basedimage
           done
       - name: Generate Runfile for each platform
         run: |
-          platforms=("linux/386" "linux/amd64" "linux/arm" "linux/aarch64" "linux/ppc64le" "linux/riscv64" "linux/s390x")
+          platforms=("linux/386" "linux/amd64" "linux/arm" "linux/aarch64" "linux/riscv64")
           for platform in "${platforms[@]}"; do
             echo "Creating Runfile for platform $platform"
             PLATFORM=$platform
@@ -194,7 +194,6 @@ jobs:
       - name: 🗃️ Upload Built AppImage 📦
         uses: actions/upload-artifact@v4
         if: always()
-
         with:
           name: Rokon-AppImage
           if-no-files-found: error
