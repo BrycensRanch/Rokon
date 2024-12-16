@@ -1,6 +1,6 @@
 module github.com/brycensranch/rokon/gtk
 
-go 1.21.0
+go 1.22.0
 
 toolchain go1.23.4
 
@@ -14,13 +14,12 @@ require (
 	github.com/spf13/viper v1.19.0
 )
 
-
 require (
-	github.com/go-resty/resty/v2 v2.16.2 // indirect
 	github.com/KarpelesLab/weak v0.1.1 // indirect
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/brycensranch/go-aptabase/pkg v0.0.0-20241215123031-9fdeca2b741e // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
+	github.com/go-resty/resty/v2 v2.16.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20241129212102-9c50ad6b591e // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
