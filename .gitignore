@@ -16,6 +16,8 @@ rokon
 Rokon*
 rokon_puregotk
 rokon_puregotk4
+rokon-qt
+rokon-gtk
 *.snap
 *.deb
 *.rpm
@@ -36,7 +38,6 @@ dmg/
 ./shellc*
 
 ./config.toml
-qt6
 data
 remote.go
 changelog_reader.go

@@ -57,27 +57,36 @@ ifneq ($(LDFLAGS),)
 endif
 
 # Define target binary
-TARGET = rokon
-
+TARGET = rokon-gtk
+FLAVOR ?= $(patsubst rokon-%,%,$(TARGET))
+CORE ?= github.com/brycensranch/rokon/core
 # Define install directories
 BINDIR = $(DESTDIR)$(PREFIX)/bin
-DATADIR = $(DESTDIR)$(PREFIX)/share/rokon
+DATADIR = $(DESTDIR)$(PREFIX)/share
+LDATADIR = packaging/usr/share
 DOCDIR = $(DESTDIR)$(PREFIX)/share/doc/rokon
 LICENSEDIR = $(DESTDIR)$(PREFIX)/share/licenses/rokon
 APPLICATIONSDIR = $(DESTDIR)$(PREFIX)/share/applications
 ICONDIR = $(DESTDIR)$(PREFIX)/share/icons/hicolor
+LICONDIR = packaging/usr/share/icons/hicolor
 METAINFODIR = $(DESTDIR)$(PREFIX)/share/metainfo
-TARBALLDIR ?= ./tarball
-MACOSDIR ?= ./macos
+TARBALLDIR = packaging/tarball
+MACOSDIR ?= packaging/macos
 SANITYCHECK ?= 1
-RUNDIR ?= ./run
+APPDIR ?= packaging/AppDir
+RUNDIR ?= packaging/run
 DMGDIR ?= $(MACOSDIR)/dmg
 RUNLIBS ?= $(RUNDIR)/libs
 ABS_RUNDIR := $(shell realpath $(RUNDIR))
 # Check if selfextract exists in the PATH
 SELFEXTRACT := $(shell command -v selfextract 2> /dev/null)
 GOOS := $(shell go env GOOS)
-
+INSTALL ?= install -Dpm
+ifeq ($(UNAME_S),Darwin)
+  INSTALL = install -m
+else
+  INSTALL ?= install -Dpm
+endif
 
 # Determine the selfextract path based on environment variables
 ifneq ($(GOBIN),)
@@ -172,7 +181,7 @@ help:
 .PHONY: clean
 clean: ## remove files created during build pipeline
 	$(call print-target)
-	rm -rf dist .flatpak io.github.brycensranch.Rokon.desktop tarball io.github.brycensranch.Rokon.metainfo.xml macos/rokon .flatpak-builder flathub/builddir flathub/.flatpak-builder flathub/repo *.log *.zip modules.txt flathub/export macos/share flathub/*.flatpak AppDir src squashfs-root *.AppImage makeself* *.run run/ *.rpm *.pdf *.rtf windows/*.rtf *.deb *.msi *.exe pkg/ *.pkg.tar.zst .ptmp* *.tar* *.snap *.zsync rokon Rokon debian/tmp debian/rokon* *.changes *.buildinfo debian/.debhelper coverage.* '"$(shell go env GOCACHE)/../golangci-lint"'
+	rm -rf dist .flatpak io.github.brycensranch.Rokon.desktop tarball io.github.brycensranch.Rokon.metainfo.xml macos/rokon .flatpak-builder flathub/builddir flathub/.flatpak-builder flathub/repo *.log *.zip modules.txt flathub/export macos/share flathub/*.flatpak AppDir src squashfs-root packaging/*.AppImage makeself* packaging/*.run packaging/run/ *.rpm *.pdf *.rtf windows/*.rtf *.deb *.msi *.exe pkg/ *.pkg.tar.zst .ptmp* *.tar* *.snap *.zsync rokon Rokon debian/tmp debian/rokon* *.changes *.buildinfo debian/.debhelper coverage.* '"$(shell go env GOCACHE)/../golangci-lint"'
 	# go clean -i -cache -testcache -modcache -fuzzcache -x
 
 .PHONY: nuke
@@ -191,7 +200,7 @@ appimage: ## build AppImage using appimage-builder
 	@echo "Building AppImage version: $(VERSION)"
 	rm -rf AppDir
 	$(MAKE) PACKAGED=true PACKAGEFORMAT=AppImage EXTRAGOFLAGS="$(EXTRAGOFLAGS) -trimpath" EXTRALDFLAGS="$(EXTRALDFLAGS) -s -w" build
-	$(MAKE) PREFIX=AppDir/usr BINDIR=AppDir install
+	$(MAKE) PREFIX=$(APPDIR)/usr BINDIR=$(APPDIR) install
 	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 appimage-builder
 
 
@@ -200,34 +209,34 @@ appimage: ## build AppImage using appimage-builder
 obsimage: ## Turns AppDir into AppImage built on OpenSUSE Build Service
 	$(call print-target)
 	@echo "Building AppImage version: $(VERSION)"
-	rm -rf AppDir
-	mv AppDir/usr/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml AppDir/usr/share/metainfo/io.github.brycensranch.Rokon.appdata.xml
-	cp ./AppDir/usr/share/icons/hicolor/256x256/apps/io.github.brycensranch.Rokon.png ./AppDir
+	rm -rf packaging/AppDir
+	mv $(APPDIR)/usr/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml AppDir/usr/share/metainfo/io.github.brycensranch.Rokon.appdata.xml
+	cp $(APPDIR)/usr/share/icons/hicolor/256x256/apps/io.github.brycensranch.Rokon.png ./AppDir
 	APPIMAGELAUNCHER_DISABLE=1 NO_STRIP=true linuxdeploy --appdir=AppDir --output appimage
 
 .PHONY: fatimage
 fatimage: ## build self contained AppImage that can run on older Linux systems while CI is on development branch
 	$(call print-target)
 	@echo "Building AppImage version: $(VERSION) (FAT)"
-	rm -rf AppDir
+	rm -rf $(APPDIR)
 	$(MAKE) PACKAGED=true PACKAGEFORMAT=AppImage EXTRAGOFLAGS="$(EXTRAGOFLAGS) -trimpath" EXTRALDFLAGS="$(EXTRALDFLAGS) -s -w" build
-	$(MAKE) PREFIX=AppDir/usr install
-	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 appimagetool -s deploy ./AppDir/usr/share/applications/io.github.brycensranch.Rokon.desktop
+	$(MAKE) PREFIX=$(APPDIR)/usr install
+	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 appimagetool -s deploy $(APPDIR)/usr/share/applications/io.github.brycensranch.Rokon.desktop
 	# My application follows the https://docs.fedoraproject.org/en-US/packaging-guidelines/AppData/ but this tool doesn't care lol
-	mv AppDir/usr/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml AppDir/usr/share/metainfo/io.github.brycensranch.Rokon.appdata.xml
-	cp ./AppDir/usr/share/icons/hicolor/256x256/apps/io.github.brycensranch.Rokon.png ./AppDir
-	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 mkappimage --comp zstd --ll -u "gh-releases-zsync|BrycensRanch|Rokon|latest|Rokon-*$(ARCH).AppImage.zsync" ./AppDir
+	mv $(APPDIR)/usr/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml $(APPDIR)/usr/share/metainfo/io.github.brycensranch.Rokon.appdata.xml
+	cp $(APPDIR)/usr/share/icons/hicolor/256x256/apps/io.github.brycensranch.Rokon.png $(APPDIR)
+	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 mkappimage --comp zstd --ll -u "gh-releases-zsync|BrycensRanch|Rokon|latest|Rokon-*$(ARCH).AppImage.zsync" $(APPDIR)
 
 .PHONY: basedimage
 basedimage: ## create AppImage from existing tarball directory
 	$(call print-target)
-	cp $(TARBALLDIR)/$(TARGET) $(TARBALLDIR)/AppRun
-	mkdir -p $(TARBALLDIR)/usr/share/metainfo
-	mkdir -p $(TARBALLDIR)/usr/share/applications
-	cp $(TARBALLDIR)/io.github.brycensranch.Rokon.desktop $(TARBALLDIR)/usr/share/applications
-	cp $(TARBALLDIR)/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml $(TARBALLDIR)/usr/share/metainfo/io.github.brycensranch.Rokon.appdata.xml
-	cp usr/share/icons/hicolor/256x256/apps/io.github.brycensranch.Rokon.png $(TARBALLDIR)
-	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 mkappimage --comp zstd --ll -u "gh-releases-zsync|BrycensRanch|Rokon|latest|Rokon-*$(ARCH).AppImage.zsync" $(TARBALLDIR)
+	cp $(APPDIR)/$(TARGET) $(APPDIR)/AppRun
+	mkdir -p $(APPDIR)/usr/share/metainfo
+	mkdir -p $(APPDIR)/usr/share/applications
+	cp $(APPDIR)/io.github.brycensranch.Rokon.desktop $(APPDIR)/usr/share/applications
+	cp $(APPDIR)/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml $(APPDIR)/usr/share/metainfo/io.github.brycensranch.Rokon.appdata.xml
+	cp $(APPDIR)/share/icons/hicolor/256x256/apps/io.github.brycensranch.Rokon.png $(APPDIR)
+	VERSION=$(VERSION) APPIMAGELAUNCHER_DISABLE=1 mkappimage --comp zstd --ll -u "gh-releases-zsync|BrycensRanch|Rokon|latest|Rokon-*$(ARCH).AppImage.zsync" $(APPDIR)
 
 .PHONY: basedrun
 basedrun: ## create Runfile from existing run directory
@@ -266,7 +275,7 @@ tarball: ## build self contained Tarball that auto updates
 	mkdir -p $(TBLIBSDIR)
 	$(MAKE) PACKAGED=true PACKAGEFORMAT=$(TBPKGFMT) EXTRAGOFLAGS="$(EXTRAGOFLAGS) -trimpath" EXTRALDFLAGS="$(EXTRALDFLAGS) -s -w -linkmode=external" build
 	$(MAKE) PREFIX=$(TARBALLDIR) APPLICATIONSDIR=$(TARBALLDIR) install
-	cp ./windows/portable.txt $(TARBALLDIR)
+	cp packaging/windows/portable.txt $(TARBALLDIR)
 	$(call copy_deps,$(TARBALLDIR)/bin/$(TARGET),$(TBLIBSDIR))
 	$(call make_wrapper_script,$(TARBALLDIR))
 	cd /usr && cp -r --parents -L --no-preserve=mode -r share/glib-2.0/schemas/gschemas.compiled share/X11 share/gtk-4.0 share/icons/Adwaita $(ABS_TARBALLDIR)
@@ -347,7 +356,7 @@ run: ## create run "package"
 dev: ## go run -v .
 	$(call print-target)
 	@echo "Starting development server for Rokon: $(VERSION)"
-	go run -v .
+	go run -v github.com/brycensranch/rokon/$(FLAVOR)
 
 .PHONY: mod
 mod: ## go mod tidy
@@ -377,6 +386,8 @@ inst: ## go install tools
 install: ## installs Rokon into $PATH and places desktop files
 	$(call print-target)
 	@echo "Version: $(VERSION)"
+	@echo "Installation Directory: $(DESTDIR)"
+	@echo "Prefix: $(PREFIX)"
 	@echo "Creating necessary directories..."
 	mkdir -p $(BINDIR)
 	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/rokon
@@ -390,39 +401,30 @@ install: ## installs Rokon into $PATH and places desktop files
 	mkdir -p $(METAINFODIR)
 	@echo "Detected OS: $(UNAME_S)"
 
-ifeq ($(UNAME_S),Darwin)
-	install -m 0755 $(TARGET) $(BINDIR)
-else
-	install -Dpm 0755 $(TARGET) $(BINDIR)
-endif
+
+	$(INSTALL) 0755 $(TARGET) $(BINDIR)
+
 
 ifeq ($(UNAME_S),Darwin)
-		install -m 0644 ./usr/share/applications/io.github.brycensranch.Rokon.desktop $(APPLICATIONSDIR)/io.github.brycensranch.Rokon.desktop
-		install -m 0644 ./usr/share/dbus-1/services/io.github.brycensranch.Rokon.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/io.github.brycensranch.Rokon.service
-		install -m 0644 ./usr/share/icons/hicolor/48x48/apps/io.github.brycensranch.Rokon.png $(ICONDIR)/48x48/apps/io.github.brycensranch.Rokon.png
-		install -m 0644 ./usr/share/icons/hicolor/128x128/apps/io.github.brycensranch.Rokon.png $(ICONDIR)/128x128/apps/io.github.brycensranch.Rokon.png
-		install -m 0644 ./usr/share/icons/hicolor/256x256/apps/io.github.brycensranch.Rokon.png $(ICONDIR)/256x256/apps/io.github.brycensranch.Rokon.png
-		install -m 0644 ./usr/share/icons/hicolor/scalable/apps/io.github.brycensranch.Rokon.svg $(ICONDIR)/scalable/apps/io.github.brycensranch.Rokon.svg
-		install -m 0644 ./usr/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml $(METAINFODIR)/io.github.brycensranch.Rokon.metainfo.xml
-		install -m 0644 ./LICENSE.md $(LICENSEDIR)/LICENSE.md;
+		$(INSTALL) 0644 $(LDATADIR)/metainfo/io.github.brycensranch.Rokon.metainfo.xml $(METAINFODIR)/io.github.brycensranch.Rokon.metainfo.xml
+		$(INSTALL) 0644 ./LICENSE.md $(LICENSEDIR)/LICENSE.md;
 else
-		install -Dpm 0644 ./usr/share/applications/io.github.brycensranch.Rokon.desktop $(APPLICATIONSDIR)/io.github.brycensranch.Rokon.desktop
-		install -Dpm 0644 ./usr/share/dbus-1/services/io.github.brycensranch.Rokon.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/io.github.brycensranch.Rokon.service
-		install -Dpm 0644 ./usr/share/icons/hicolor/48x48/apps/io.github.brycensranch.Rokon.png $(ICONDIR)/48x48/apps/io.github.brycensranch.Rokon.png
-		install -Dpm 0644 ./usr/share/icons/hicolor/128x128/apps/io.github.brycensranch.Rokon.png $(ICONDIR)/128x128/apps/io.github.brycensranch.Rokon.png;
-		install -Dpm 0644 ./usr/share/icons/hicolor/256x256/apps/io.github.brycensranch.Rokon.png $(ICONDIR)/256x256/apps/io.github.brycensranch.Rokon.png
-		install -Dpm 0644 ./usr/share/icons/hicolor/scalable/apps/io.github.brycensranch.Rokon.svg $(ICONDIR)/scalable/apps/io.github.brycensranch.Rokon.svg
-		install -Dpm 0644 ./usr/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml $(METAINFODIR)/io.github.brycensranch.Rokon.metainfo.xml
-		install -Dpm 0644 ./LICENSE.md $(LICENSEDIR)/LICENSE.md
+		$(INSTALL) 0644 $(LDATADIR)/applications/io.github.brycensranch.Rokon.desktop $(APPLICATIONSDIR)/io.github.brycensranch.Rokon.desktop
+		sed -i 's|rokon|$(TARGET)|g' $(APPLICATIONSDIR)/io.github.brycensranch.Rokon.desktop
+		$(INSTALL) 0644 $(LDATADIR)/metainfo/io.github.brycensranch.Rokon.metainfo.xml $(METAINFODIR)/io.github.brycensranch.Rokon.metainfo.xml
+		$(INSTALL) 0644 $(LDATADIR)/dbus-1/services/io.github.brycensranch.Rokon.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/io.github.brycensranch.Rokon.service
+
 endif
+
+	$(INSTALL) 0644 $(LICONDIR)/48x48/apps/io.github.brycensranch.Rokon.png $(ICONDIR)/48x48/apps/io.github.brycensranch.Rokon.png
+	$(INSTALL) 0644 $(LICONDIR)/128x128/apps/io.github.brycensranch.Rokon.png $(ICONDIR)/128x128/apps/io.github.brycensranch.Rokon.png;
+	$(INSTALL) 0644 $(LICONDIR)/256x256/apps/io.github.brycensranch.Rokon.png $(ICONDIR)/256x256/apps/io.github.brycensranch.Rokon.png
+	$(INSTALL) 0644 $(LICONDIR)/scalable/apps/io.github.brycensranch.Rokon.svg $(ICONDIR)/scalable/apps/io.github.brycensranch.Rokon.svg
+	$(INSTALL) 0644 ./LICENSE.md $(LICENSEDIR)/LICENSE.md
 
 	@if [ "$(NODOCUMENTATION)" != "1" ]; then \
 		echo "Installing documentation (PRIVACY.md, README.md) to $(DESTDIR)$(PREFIX)/share/doc/rokon"; \
-		if [ "$(UNAME_S)" = "Darwin" ]; then \
-			install -m 0644 ./PRIVACY.md ./README.md $(DESTDIR)$(PREFIX)/share/doc/rokon; \
-		else \
-			install -Dpm 0644 ./PRIVACY.md ./README.md $(DESTDIR)$(PREFIX)/share/doc/rokon; \
-		fi; \
+		$(INSTALL) 0644 ./PRIVACY.md ./README.md $(DESTDIR)$(PREFIX)/share/doc/rokon; \
 	else \
 		echo "Skipping documentation installation. Please make sure you include PRIVACY notice."; \
 	fi
@@ -431,7 +433,7 @@ endif
 .PHONY: uninstall
 uninstall:
 	$(call print-target)
-	@echo "Uninstalling version $(VERSION)"
+	@echo "Uninstalling"
 	rm -f $(BINDIR)/$(TARGET)
 	rm -f $(APPLICATIONSDIR)/io.github.brycensranch.Rokon.desktop
 	rm -f $(ICONDIR)/48x48/apps/io.github.brycensranch.Rokon.png
@@ -453,12 +455,12 @@ build: ## go build -v -o rokon
 	$(call print-target)
 	@echo "Building version $(VERSION) commit $(COMMIT) on branch $(BRANCH)"
 	@if [ "$(GOOS)" = "linux" ] && [ "$(ARCH)" != "x86_64" ] && [ "$(ARCH)" != "amd64" ] && [ "$(ARCH)" != "aarch64" ] && [ "$(ARCH)" != "arm64" ] && [ "$(ARCH)" != "i386" ] && [ "$(ARCH)" != "i686" ]; then \
-		if [ -f cgosymbolizer_linux.go ]; then \
-			rm -f cgosymbolizer_linux.go; \
-			echo "cgosymbolizer_linux.go is not supported for your CPU architecture. As such, it's been removed from the build. Do not commit this change to git."; \
+		if [ -f core/cgosymbolizer.go ]; then \
+			rm -f core/cgosymbolizer.go; \
+			echo "cgosymbolizer.go is not supported for your CPU architecture. As such, it's been removed from the build. Do not commit this change to git."; \
 		fi; \
 	fi
-	go build -v -ldflags="-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.packaged=$(PACKAGED) -X main.packageFormat=$(PACKAGEFORMAT) -X main.branch=$(BRANCH) -X main.date=$(DATE) $(EXTRALDFLAGS)" $(EXTRAGOFLAGS) -o $(TARGET) -tags "$(BUILDTAGS)" .
+	go build -v -ldflags="-X $(CORE).Version=$(VERSION) -X $(CORE).Commit=$(COMMIT) -X $(CORE).Packaged=$(PACKAGED) -X $(CORE).PackageFormat=$(PACKAGEFORMAT) -X $(CORE).Branch=$(BRANCH) -X $(CORE).Date=$(DATE) $(EXTRALDFLAGS)" $(EXTRAGOFLAGS) -o $(TARGET) -tags "$(BUILDTAGS)" github.com/brycensranch/rokon/$(FLAVOR)
 
 .PHONY: spell
 spell: ## misspell
@@ -473,11 +475,23 @@ lint: ## golangci-lint
 .PHONY: vuln
 vuln: ## govulncheck
 	$(call print-target)
+	cd ./core
+	govulncheck ./...
+	cd ../gtk
+	govulncheck ./...
+	cd ../qt
 	govulncheck ./...
 
 .PHONY: test
 test: ## go test
 	$(call print-target)
+	cd ./core
+	go test -race -covermode=atomic -coverprofile=coverage.out -coverpkg=./... ./...
+	go tool cover -html=coverage.out -o coverage.html
+	cd ../gtk
+	go test -race -covermode=atomic -coverprofile=coverage.out -coverpkg=./... ./...
+	go tool cover -html=coverage.out -o coverage.html
+	cd ../qt
 	go test -race -covermode=atomic -coverprofile=coverage.out -coverpkg=./... ./...
 	go tool cover -html=coverage.out -o coverage.html
 

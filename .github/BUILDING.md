@@ -91,6 +91,7 @@ sudo nala install -y build-essential git libgtk-4-dev golang-go libgirepository1
 > Alpine Linux:
 
 ```bash
+# Add community repository
 sudo setup-apkrepos -c -1
 sudo apk add --no-cache alpine-sdk gtk4.0-dev gobject-introspection-dev go make
 ```

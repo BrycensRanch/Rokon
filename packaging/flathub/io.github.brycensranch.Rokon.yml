@@ -1,0 +1,46 @@
+id: io.github.brycensranch.Rokon
+runtime: org.gnome.Platform
+runtime-version: "47"
+sdk: org.gnome.Sdk
+command: rokon-gtk
+
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.golang
+  - org.freedesktop.Sdk.Extension.llvm19
+
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --share=ipc
+  - --share=network
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.secrets
+  - --talk-name=org.kde.kwalletd5
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --filesystem=xdg-run/keyring
+  - --device=dri
+
+modules:
+  - name: rokon
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/golang/bin:/usr/lib/sdk/llvm19/bin
+      prepend-ld-library-path: /usr/lib/sdk/llvm19/lib
+      env:
+        CC: clang
+        CXX: clang++
+        GOBIN: /app/bin
+        GOROOT: /usr/lib/sdk/golang
+    build-commands:
+      - make PACKAGED=true PACKAGEFORMAT=flatpak EXTRAGOFLAGS="-mod=vendor -trimpath" build
+      - desktop-file-edit --set-key=Exec --set-value=$GOBIN/rokon-gtk packaging/usr/share/applications/$FLATPAK_ID.desktop
+      - make PREFIX=/app BINDIR=$GOBIN install
+      - ./rokon --version
+    sources:
+      - type: git
+        url: https://github.com/BrycensRanch/Rokon
+        branch: master
+        commit: f3a2e2cb0c7de053ff0715a4bbc679b00bd10e54
+
+      - go.mod.yml

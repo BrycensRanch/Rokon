@@ -1,5 +1,5 @@
 <h1 align="center">
-      <img alt="Rokon logo" src="assets/Rokon.png" width="240" />
+      <img alt="Rokon logo" src=".github/assets/Rokon.png" width="240" />
       <h1 align="center" >Rokon (Roku Remote for your computer) </h1>
   </p>
   <p align="center">
@@ -29,14 +29,6 @@
   <a href="https://wakatime.com/badge/github/BrycensRanch/Rokon"><img src="https://wakatime.com/badge/github/BrycensRanch/Rokon.svg?style=for-the-badge" alt="Time spent coding this repository"></a>
     <a aria-label="CodeFactor Grade" href="https://www.codefactor.io/repository/github/BrycensRanch/Rokon">
       <img alt="CodeFactor Grade Badge" src="https://img.shields.io/codefactor/grade/github/BrycensRanch/Rokon?style=for-the-badge" />
-    </a>
-    <a aria-label="GitPod Ready to Code" href="https://gitpod.io/from-referrer/">
-      <img alt="GitPod Ready to Code Badge" src="https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod&style=for-the-badge" />
-    </a>
-    <a aria-label="Open in GitHub Codespaces" href="https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=604445666&machine=basicLinux32gb&devcontainer_path=.devcontainer%2Fdevcontainer.json&location=EastUs">
-    <img alt="Open in GitHub Codespaces Badge"
-      src="https://github.com/codespaces/badge.svg"
-      />
     </a>
 </p>
 <h2>Get it on Linux</h2>
@@ -85,7 +77,9 @@ Packages for macOS are a WIP. I plan to target:
 
 > Also, none of the features listed below are implemented yet. This is a roadmap for the future.
 
-This application provides a remote control interface for Roku devices, utilizing the Roku External Control Protocol (ECP) API. It allows users to control their Roku device from their desktop or laptop, providing a more convenient and efficient way to interact with their TV. The app offers a sleek interface with various functions such as navigation, volume control, input selection, typing, and more. It also supports features like Neovim Mode, automatic Roku discovery, DiscordRPC integration, and more. With Rokon, you can control your Roku device remotely with ease and speed, all without the noise of a traditional remote. All powered by Golang and GTK4.
+This application provides a remote control interface for Roku devices, utilizing the Roku External Control Protocol (ECP) API. It allows users to control their Roku device from their desktop or laptop, providing a more convenient and efficient way to interact with their TV. The app offers a sleek interface with various functions such as navigation, volume control, input selection, typing, and more. It also supports features like Neovim Mode, automatic Roku discovery, DiscordRPC integration, and more. With Rokon, you can control your Roku device remotely with ease and speed, all without the noise of a traditional remote.
+
+All powered by Golang and GTK4. (Soon to provide a QT6 option)
 
 ## Features
 
@@ -111,7 +105,7 @@ This application provides a remote control interface for Roku devices, utilizing
 
 Below is an example screenshot of the application:
 
-![Example Screenshot](screenshots/desktop.png)
+![Example Screenshot](.github/screenshots/desktop.png)
 
 ## Installation
 
@@ -131,7 +125,7 @@ The application communicates with Roku devices using the Roku External Control P
 ## License
 
 - My code is licensed under [`AGPL-3.0-or-later`](./LICENSE.md)
-- My assets for example Rokon's logo is licensed under [`CC-BY-SA-4.0`](./assets/LICENSE.md)
+- My assets for example Rokon's logo is licensed under [`CC-BY-SA-4.0`](.github/./assets/LICENSE.md)
 - Rokon's documentation is licensed under [`GFDL-1.3`](https://raw.githubusercontent.com/IQAndreas/markdown-licenses/master/gnu-fdl-v1.3.md)
 
 Rokon is free software as defined by the [FSF](https://fsf.org). It collects telemetry data by default, see [PRIVACY.md](./PRIVACY.md)

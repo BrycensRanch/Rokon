@@ -12,6 +12,7 @@ rokon
 rokon-Linux*
 Rokon*
 squashfs-root
+packaging/
 
 
 # Ignore configuration, environment, and log files
@@ -41,9 +42,6 @@ squashfs-root
 *.tar*     # Generic tar files, including Arch Linux tarballs
 *.zsync
 *.tgz
-debian
-flathub
-AppDir
 .git
 .github
 .vscode
@@ -52,10 +50,6 @@ macos
 
 # Ignore AppImage files
 *.AppImage
-/AppDir
-/appimage
-/AppImageBuild
-/appimage-build
 *.squashfs
 
 # Ignore Flatpak build directories and packages

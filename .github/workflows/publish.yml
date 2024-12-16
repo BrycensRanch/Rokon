@@ -34,6 +34,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          file: packaging/docker/Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
   archlinux:
@@ -68,8 +69,10 @@ jobs:
         continue-on-error: true
         run: make check
       - name: Build Archlinux Package
+        working-directory: packaging
         run: |
           makepkg -s --noconfirm
+          mv *.pkg.* $GITHUB_WORKSPACE
 
       - name: Get Package Name
         id: pkg_name
@@ -180,6 +183,7 @@ jobs:
         run: sudo dnf remove -y rokon rokon-debuginfo rokon-debugsource golang-github-brycensranch-aptabase-devel
       - name: Build and Install RPMs
         if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch'
+        working-directory: packaging
         run: |
           for spec in ./*.spec; do
               echo "Building $spec"
@@ -202,7 +206,7 @@ jobs:
         run: sudo dnf remove -y rokon rokon-debuginfo rokon-debugsource golang-github-brycensranch-aptabase-devel
       - name: Lint AppStream Metadata
         run: |
-          flatpak run --command=flatpak-builder-lint --user org.flatpak.Builder appstream usr/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml
+          flatpak run --command=flatpak-builder-lint --user org.flatpak.Builder appstream packaging/usr/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml
       - name: Import GPG key
         id: import_gpg
         if: github.event_name != 'pull_request'
@@ -242,6 +246,7 @@ jobs:
             *.AppImage
             *.AppImage.zsync
       - name: 🔷 Update Flatpak Data
+        working-directory: packaging
         run: |
           rm flathub/go.mod.yml flathub/modules.txt
           go mod tidy -go=1.22.0
@@ -255,7 +260,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           # Only golang stuff! Prevents snapcraft.yaml from being updated on a PR branch!
-          file_pattern: "*.mod *.sum flathub/*.yml flathub/modules.txt"
+          file_pattern: "*.mod *.sum packaging/flathub/*.yml packaging/flathub/modules.txt"
           commit_options: "--no-verify --no-gpg-sign"
           push_options: "--no-verify --no-signed"
           commit_message: "build(flathub): update go vendor modules [skip ci]"
@@ -267,19 +272,21 @@ jobs:
         id: extract_branch
       - name: Set source branch for Flatpak
         if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        working-directory: packaging
         run: yq '.modules[0].sources[0].branch = "${{env.BRANCH_NAME}}"' -i flathub/io.github.brycensranch.Rokon-beta.yml
         env:
           BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
 
       - name: Set source URL for Flatpak
         if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        working-directory: packaging
         run: yq '.modules[0].sources[0].url = "${{env.GITHUB_REPOSITORY_URL}}"' -i flathub/io.github.brycensranch.Rokon-beta.yml
         env:
           GITHUB_REPOSITORY_URL: "${{ github.server_url }}/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}.git"
 
       - name: ⚙️ Assemble the Flatpak!
         if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
-        working-directory: flathub
+        working-directory: packaging/flathub
         run: |
           flatpak-builder --disable-rofiles-fuse --install --user --install-deps-from=flathub --force-clean repo/ io.github.brycensranch.Rokon-beta.yml
           # I honestly have no idea what this does.
@@ -359,19 +366,25 @@ jobs:
       - name: Set snapcraft version
         id: set_version
         if: ${{ github.event_name == 'pull_request' }}
+        working-directory: packaging
         run: |
           yq '.version = "${{ steps.extract_version.outputs.version }}-${{ steps.sanitize_branch.outputs.sanitized_branch }}.gha${{ github.run_number }}"' -i snapcraft.yaml
       - name: Switch snap branch
         if: ${{ github.event_name == 'pull_request' }}
+        working-directory: packaging
         run: yq '.parts.rokon.source-branch = "${{ steps.extract_branch.outputs.branch }}"' -i snapcraft.yaml
       - name: Switch snap git repository
         if: ${{ github.event_name == 'pull_request' }}
+        working-directory: packaging
         run: yq '.parts.rokon.source = "${{ github.server_url }}/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}"' -i snapcraft.yaml
       - name: Force snap to be grade devel
+        working-directory: packaging
         if: ${{ github.event_name == 'pull_request' }}
         run: yq '.grade = "devel"' -i snapcraft.yaml
       - name: 🫰 Assemble the Snap
         uses: snapcore/action-build@v1
+        with:
+          path: packaging/snapcraft.yaml
         if: ${{ github.event_name == 'pull_request' }}
         id: snapcraft_build
       - name: Test Installing Snap
@@ -414,6 +427,7 @@ jobs:
           git_push_gpgsign: false
       - name: 🤠 Assemble the DEB
         continue-on-error: true
+        working-directory: packaging
         env:
           DEBEMAIL: ${{steps.import_gpg.outputs.email}}
           DEBFULLNAME: ${{steps.import_gpg.outputs.name}}
@@ -429,7 +443,6 @@ jobs:
           cp ../*.{deb,buildinfo,changes} ./ || true
       - name: 🗃️ Upload Deb packages
         uses: actions/upload-artifact@v4
-
         if: always()
         with:
           name: rokon-deb-${{ matrix.arch }}
@@ -563,7 +576,7 @@ jobs:
           make DESTDIR="$RESULTSDIR" TARGET="Rokon.exe" PREFIX="" BINDIR="$RESULTSDIR" install
 
       - name: Produce rtf files for installer and PDF files for end user
-        working-directory: scripts/md2rtf
+        working-directory: packaging/scripts/md2rtf
         run: |
           export RESULTSDIR=$(realpath "${{ runner.temp }}\\exe")
           go run -v . md2rtf
@@ -583,12 +596,12 @@ jobs:
       - name: Make MSI installer
         uses: ./.github/actions/make-advinst-app
         with:
-          aip-file: windows/rokon.aip
+          aip-file: packaging/windows/rokon.aip
           exe-directory: ${{ runner.temp }}/exe
           exe-name: Rokon.exe
           app-name: Rokon
           app-version: ${{ steps.prepare.outputs.version }}
-          icon-file: windows/assets/rokon.ico
+          icon-file: packaging/windows/assets/rokon.ico
           out-path: .
           out-name: ${{ steps.prepare.outputs.name }}
       - name: Test MSI Install
@@ -621,7 +634,7 @@ jobs:
         run: |
           export RESULTSDIR=$(realpath "${{ runner.temp }}\\exe")
           make TARGET="$RESULTSDIR/Rokon.exe" EXTRALDFLAGS="-s -w -H windowsgui" EXTRAGOFLAGS="-trimpath" BUILDTAGS=$BUILD_TAGS PACKAGEFORMAT=portable  PACKAGED=true build
-          cp windows/*.txt "$RESULTSDIR"
+          cp packaging/windows/*.txt "$RESULTSDIR"
       - name: 🗃️ Upload Portable
         uses: actions/upload-artifact@v4
         if: always()
