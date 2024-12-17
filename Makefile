@@ -457,7 +457,6 @@ build: ## go build -v -o rokon
 	@if [ "$(GOOS)" = "darwin" ]; then \
 			rm -f core/cgosymbolizer.go; \
 			echo "cgosymbolizer.go is not supported on your Operating System. As such, it's been removed from the build. Do not commit this change to git."; \
-		fi; \
 	fi
 	@if [ "$(GOOS)" = "linux" ] && [ "$(ARCH)" != "x86_64" ] && [ "$(ARCH)" != "amd64" ] && [ "$(ARCH)" != "aarch64" ] && [ "$(ARCH)" != "arm64" ] && [ "$(ARCH)" != "i386" ] && [ "$(ARCH)" != "i686" ]; then \
 		if [ -f core/cgosymbolizer.go ]; then \
