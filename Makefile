@@ -454,10 +454,9 @@ gen: ## go generate
 build: ## go build -v -o rokon
 	$(call print-target)
 	@echo "Building version $(VERSION) commit $(COMMIT) on branch $(BRANCH)"
-	@if [ "$(GOOS)" = "darwin" ] && [ "$(ARCH)" != "x86_64" ] && [ "$(ARCH)" != "amd64" ]; then \
-		if [ -f core/cgosymbolizer.go ]; then \
+	@if [ "$(GOOS)" = "darwin" ]; then \
 			rm -f core/cgosymbolizer.go; \
-			echo "cgosymbolizer.go is not supported for your CPU architecture. As such, it's been removed from the build. Do not commit this change to git."; \
+			echo "cgosymbolizer.go is not supported on your Operating System. As such, it's been removed from the build. Do not commit this change to git."; \
 		fi; \
 	fi
 	@if [ "$(GOOS)" = "linux" ] && [ "$(ARCH)" != "x86_64" ] && [ "$(ARCH)" != "amd64" ] && [ "$(ARCH)" != "aarch64" ] && [ "$(ARCH)" != "arm64" ] && [ "$(ARCH)" != "i386" ] && [ "$(ARCH)" != "i686" ]; then \
