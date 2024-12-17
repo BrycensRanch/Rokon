@@ -21,13 +21,13 @@ WORKDIR /app
 COPY . .
 
 # Build the application
-RUN go build -o rokon main.go
+RUN go build -o rokon-gtk github.com/brycensranch/rokon/gtk
 
 ENV DISPLAY=:99
 
 # Command to run the application inside Xvfb and take a screenshot
 CMD Xvfb :99 -screen 0 1920x1080x24 & \
     export DISPLAY=:99 && \
-    dbus-launch ./rokon & \
+    dbus-launch ./rokon-gtk & \
     sleep 5 && \
     scrot /app/screenshots/desktop.png

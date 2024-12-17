@@ -23,8 +23,8 @@ SHELL ["C:\\msys64\\usr\\bin\\env.exe", "/usr/bin/bash", "--login",  "C:\\app\\w
 RUN pacman -S --needed --noconfirm --noprogressbar git mingw-w64-clang-x86_64-go mingw-w64-clang-x86_64-gtk4 mingw-w64-clang-x86_64-upx mingw-w64-clang-x86_64-gobject-introspection mingw-w64-clang-x86_64-gdb mingw-w64-clang-x86_64-toolchain make
 RUN ls -R
 
-RUN make TARGET="Rokon.exe" PACKAGED=true EXTRALDFLAGS="-s -w -H windowsgui" EXTRAGOFLAGS="-trimpath" PACKAGEFORMAT=docker build
-RUN make TARGET="Rokon.exe" PREFIX="./Rokon" BINDIR="./Rokon" install
+RUN make TARGET="Rokon.exe" FLAVOR=gtk PACKAGED=true EXTRALDFLAGS="-s -w -H windowsgui" EXTRAGOFLAGS="-trimpath" PACKAGEFORMAT=docker build
+RUN make TARGET="Rokon.exe" FLAVOR=gtk PREFIX="./Rokon" BINDIR="./Rokon" install
 RUN ldd "Rokon.exe" | { grep "=> /clang64/bin/" || true; }             | cut -d ' ' -f1             | xargs -I{} cp /clang64/bin/{} ./Rokon
 
 WORKDIR C:\\app\\Rokon

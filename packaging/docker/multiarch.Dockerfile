@@ -40,7 +40,7 @@ WORKDIR /app
 # Without ca-certitifcates, telemetry fails to send.
 RUN apt update && apt full-upgrade -y && apt install -y libgles2 ca-certificates && apt clean && apt autoremove
 
-COPY --from=builder /app/tarball .
+COPY --from=builder /app/packaging/tarball .
 
 
 CMD ["./rokon"]

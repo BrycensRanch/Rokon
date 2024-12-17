@@ -29,6 +29,6 @@ FROM fedora:latest AS runner
 
 WORKDIR /app
 
-COPY --from=builder /app/tarball .
+COPY --from=builder /app/packaging/tarball .
 
 CMD ["./rokon"]
