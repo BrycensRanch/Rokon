@@ -68,7 +68,7 @@ func main() {
 	}
 
 	projectName := "rokon"
-	packageName := "rokon"
+	packageName := "rokon-gtk"
 
 	// Fetch pending builds
 	pendingBuilds := fetchBuilds(coprUsername, coprToken, coprLogin, projectName, packageName, "pending")
