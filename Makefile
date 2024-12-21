@@ -364,13 +364,14 @@ mod: ## go mod tidy
 	go mod tidy
 	cd tools && go mod tidy
 .PHONY: dmg
-dmg: ## go mod tidy
+dmg: ## dylibbundler + create-dmg
 	$(call print-target)
 	mkdir -p $(MACOSDIR)/lib/gdk-pixbuf-2.0 $(MACOSDIR)/share/glib-2.0/schemas $(MACOSDIR)/share/icons
 	$(MAKE) PREFIX=$(MACOSDIR) BINDIR=$(MACOSDIR) APPLICATIONSDIR=$(MACOSDIR) install
-	dylibbundler -b -d $(MACOSDIR)/lib -x $(MACOSDIR)/rokon
+	dylibbundler -b -d $(MACOSDIR)/lib -x $(MACOSDIR)/$(TARGET)
 	cp -r $(BREW)/opt/gtk4/share/gtk-4.0 $(MACOSDIR)/share
 	cp -r $(BREW)/share/icons/hicolor $(MACOSDIR)/share/icons
+	sed -i 's/rokon-gtk/\.\/$(TARGET)/g' $(MACOSDIR)/rokon.sh
 	mkdir -p $(DMGDIR)/Rokon.app/Contents/MacOS $(DMGDIR)/Rokon.app/Contents/Resources
 	cp $(MACOSDIR)/icon.icns $(DMGDIR)/Rokon.app/Contents/Resources
 	cp $(MACOSDIR)/io.github.BrycensRanch.Rokon.plist $(DMGDIR)/Rokon.app/Contents
