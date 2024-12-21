@@ -72,10 +72,10 @@ LICONDIR = packaging/usr/share/icons/hicolor
 METAINFODIR = $(DESTDIR)$(PREFIX)/share/metainfo
 TARBALLDIR = packaging/tarball
 MACOSDIR ?= packaging/macos
+DMGDIR ?= $(MACOSDIR)/dmg
 SANITYCHECK ?= 1
 APPDIR ?= packaging/AppDir
 RUNDIR ?= packaging/run
-DMGDIR ?= $(MACOSDIR)/dmg
 RUNLIBS ?= $(RUNDIR)/libs
 ABS_RUNDIR := $(shell realpath $(RUNDIR))
 # Check if selfextract exists in the PATH
@@ -406,14 +406,11 @@ install: ## installs Rokon into $PATH and places desktop files
 
 
 ifeq ($(UNAME_S),Darwin)
-		$(INSTALL) 0644 $(LDATADIR)/metainfo/io.github.brycensranch.Rokon.metainfo.xml $(METAINFODIR)/io.github.brycensranch.Rokon.metainfo.xml
-		$(INSTALL) 0644 ./LICENSE.md $(LICENSEDIR)/LICENSE.md;
 else
 		$(INSTALL) 0644 $(LDATADIR)/applications/io.github.brycensranch.Rokon.desktop $(APPLICATIONSDIR)/io.github.brycensranch.Rokon.desktop
 		sed -i 's|rokon|$(TARGET)|g' $(APPLICATIONSDIR)/io.github.brycensranch.Rokon.desktop
 		$(INSTALL) 0644 $(LDATADIR)/metainfo/io.github.brycensranch.Rokon.metainfo.xml $(METAINFODIR)/io.github.brycensranch.Rokon.metainfo.xml
 		$(INSTALL) 0644 $(LDATADIR)/dbus-1/services/io.github.brycensranch.Rokon.service $(DESTDIR)$(PREFIX)/share/dbus-1/services/io.github.brycensranch.Rokon.service
-
 endif
 
 	$(INSTALL) 0644 $(LICONDIR)/48x48/apps/io.github.brycensranch.Rokon.png $(ICONDIR)/48x48/apps/io.github.brycensranch.Rokon.png
