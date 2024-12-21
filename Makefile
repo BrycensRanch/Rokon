@@ -451,7 +451,7 @@ gen: ## go generate
 build: ## go build -v -o rokon
 	$(call print-target)
 	@echo "Building version $(VERSION) commit $(COMMIT) on branch $(BRANCH)"
-	@if [ "$(GOOS)" = "darwin" ]; then \
+	@if [ "$(GOOS)" != "linux" ]; then \
 			rm -f core/cgosymbolizer.go; \
 			echo "cgosymbolizer.go is not supported on your Operating System. As such, it's been removed from the build. Do not commit this change to git."; \
 	fi
