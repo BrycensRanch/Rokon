@@ -47,7 +47,7 @@
 
 <h2>Get it on Windows</h2>
 
-Windows 10+ is supported. Old versions of Windows are not.
+Windows 10 22H2+ is supported. Old versions of Windows are not.
 If you're using Windows on ARM, Windows 11 is only supported.
 
 Packages for Windows are a WIP. I plan to target:
