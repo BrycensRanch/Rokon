@@ -25,7 +25,16 @@ import (
 	gohtml "golang.org/x/net/html"
 )
 
-var rootDir = filepath.Join("..", "..", "..")
+var rootDir = func() string {
+	if dir := os.Getenv("GITHUB_WORKSPACE"); dir != "" {
+		return dir
+	}
+	if dir := os.Getenv("WORKSPACE"); dir != "" {
+		return dir
+	}
+	return filepath.Join("..", "..", "..")
+}()
+
 
 // Escape RTF special characters
 func escapeRTF(input string) string {
