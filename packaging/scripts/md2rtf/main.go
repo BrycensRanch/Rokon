@@ -378,8 +378,6 @@ func convertMarkdownToPDF(mdContent []byte, outputPath string) error {
 }
 
 func md2pdf() {
-	rootDir := filepath.Join("..", "..")
-
 	files, err := ioutil.ReadDir(rootDir)
 	if err != nil {
 		fmt.Println("Error reading directory:", err)
