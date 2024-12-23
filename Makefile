@@ -371,7 +371,6 @@ dmg: ## dylibbundler + create-dmg
 	dylibbundler -b -d $(MACOSDIR)/lib -x $(MACOSDIR)/$(TARGET)
 	cp -r $(BREW)/opt/gtk4/share/gtk-4.0 $(MACOSDIR)/share
 	cp -r $(BREW)/share/icons/hicolor $(MACOSDIR)/share/icons
-	sed -i "s/rokon-gtk/\.\/$(TARGET)/g" $(MACOSDIR)/rokon.sh
 	mkdir -p $(DMGDIR)/Rokon.app/Contents/MacOS $(DMGDIR)/Rokon.app/Contents/Resources
 	cp $(MACOSDIR)/icon.icns $(DMGDIR)/Rokon.app/Contents/Resources
 	cp $(MACOSDIR)/io.github.BrycensRanch.Rokon.plist $(DMGDIR)/Rokon.app/Contents
