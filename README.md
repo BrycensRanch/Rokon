@@ -105,7 +105,7 @@ All powered by Golang and GTK4. (Soon to provide a QT6 option)
 
 Below is an example screenshot of the application:
 
-![Example Screenshot](.github/screenshots/desktop.png)
+![Example Screenshot](\.github/screenshots/desktop.png)
 
 ## Installation
 
