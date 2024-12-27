@@ -591,7 +591,8 @@ jobs:
               rm $GITHUB_WORKSPACE/LICENSE.rtf || true
           fi
           mv LICENSE.rtf $GITHUB_WORKSPACE || true
-          mv $GITHUB_WORKSPACE\\*.rtf $GITHUB_WORKSPACE/packaging/windows
+          cd $GITHUB_WORKSPACE
+          mv *.pdf *.rtf $GITHUB_WORKSPACE/packaging/windows || true
 
       - name: Make MSI installer
         uses: ./.github/actions/make-advinst-app
