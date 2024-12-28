@@ -632,6 +632,7 @@ jobs:
       - name: Remove msi executable
         run: rm "${{ runner.temp }}\\exe\\Rokon.exe"
       - name: Make Portable
+        continue-on-error: true
         run: |
           export RESULTSDIR=$(realpath "${{ runner.temp }}\\exe")
           make TARGET="$RESULTSDIR/Rokon.exe" EXTRALDFLAGS="-s -w -H windowsgui" EXTRAGOFLAGS="-trimpath" BUILDTAGS=$BUILD_TAGS PACKAGEFORMAT=portable  PACKAGED=true build
