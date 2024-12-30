@@ -1,6 +1,8 @@
 module github.com/brycensranch/rokon/core
 
-go 1.21.0
+go 1.22.0
+
+toolchain go1.23.4
 
 require (
 	github.com/adrg/xdg v0.5.3
@@ -11,7 +13,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
-	golang.org/x/exp v0.0.0-20241215155358-4a5509556b9e
+	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
 	golang.org/x/mod v0.22.0
 )
 
