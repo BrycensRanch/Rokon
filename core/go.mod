@@ -1,13 +1,15 @@
 module github.com/brycensranch/rokon/core
 
-go 1.21.0
+go 1.22.0
+
+toolchain go1.23.4
 
 require (
 	github.com/adrg/xdg v0.5.3
 	github.com/brycensranch/go-aptabase/pkg v0.0.0-20241215123031-9fdeca2b741e
 	github.com/go-resty/resty/v2 v2.16.2
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20241129212102-9c50ad6b591e
-	github.com/koron/go-ssdp v0.0.4
+	github.com/koron/go-ssdp v0.0.5
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
@@ -29,7 +31,7 @@ require (
 	github.com/spf13/cast v1.7.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
