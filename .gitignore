@@ -78,8 +78,6 @@ latest
 rpm
 debian/.debhelper
 app
-io.github.brycensranch.Rokon.desktop
-io.github.brycensranch.Rokon.metainfo.xml
 glibc-downgrade
 
 # Rokon does not use the src convention and never will.
