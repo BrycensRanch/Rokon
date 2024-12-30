@@ -265,7 +265,7 @@ basedrun: ## create Runfile from existing run directory
 	@echo "Cheers, the run file was successfully created. It is the file ./$(RUNFILE_NAME) 🚀"
 .ONESHELL:
 .PHONY: tarball
-tarball: ## build self contained Tarball that auto updates
+tarball: ## build self contained Tarball
 	$(call print-target)
 	@echo "Building Rokon Tarball version: $(VERSION)"
 	@echo "This process requires the following command line utils to work properly: awk, ldd, tar"
