@@ -366,25 +366,19 @@ jobs:
       - name: Set snapcraft version
         id: set_version
         if: ${{ github.event_name == 'pull_request' }}
-        working-directory: packaging
         run: |
           yq '.version = "${{ steps.extract_version.outputs.version }}-${{ steps.sanitize_branch.outputs.sanitized_branch }}.gha${{ github.run_number }}"' -i snapcraft.yaml
       - name: Switch snap branch
         if: ${{ github.event_name == 'pull_request' }}
-        working-directory: packaging
         run: yq '.parts.rokon.source-branch = "${{ steps.extract_branch.outputs.branch }}"' -i snapcraft.yaml
       - name: Switch snap git repository
         if: ${{ github.event_name == 'pull_request' }}
-        working-directory: packaging
         run: yq '.parts.rokon.source = "${{ github.server_url }}/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}"' -i snapcraft.yaml
       - name: Force snap to be grade devel
-        working-directory: packaging
         if: ${{ github.event_name == 'pull_request' }}
         run: yq '.grade = "devel"' -i snapcraft.yaml
       - name: 🫰 Assemble the Snap
         uses: snapcore/action-build@v1
-        with:
-          path: packaging/snapcraft.yaml
         if: ${{ github.event_name == 'pull_request' }}
         id: snapcraft_build
       - name: Test Installing Snap
