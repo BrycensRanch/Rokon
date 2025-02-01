@@ -32,7 +32,7 @@ changelog() {
 
 check() {
     cd Rokon
-    ./rokon --version
+    ./rokon-gtk --version
 }
 
 build() {
