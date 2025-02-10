@@ -19,7 +19,7 @@
   <screenshots>
     <screenshot type="default">
       <caption>The home screen</caption>
-      <image type="source">https://raw.githubusercontent.com/BrycensRanch/Rokon/master/screenshots/desktop.png</image>
+      <image type="source">https://raw.githubusercontent.com/BrycensRanch/Rokon/master/.github/screenshots/desktop.png</image>
     </screenshot>
   </screenshots>
   <url type="homepage">https://github.com/BrycensRanch/Rokon</url>
