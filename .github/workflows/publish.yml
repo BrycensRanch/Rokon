@@ -246,13 +246,13 @@ jobs:
             *.AppImage
             *.AppImage.zsync
       - name: 🔷 Update Flatpak Data
-        working-directory: packaging
         run: |
-          rm flathub/go.mod.yml flathub/modules.txt
+          rm packaging/flathub/go.mod.yml packaging/flathub/modules.txt
+          cd gtk
           go mod tidy -go=1.22.0
           go mod vendor
           go run github.com/dennwc/flatpak-go-mod@latest .
-          mv modules.txt go.mod.yml flathub/
+          mv modules.txt go.mod.yml ../flathub/
           # the vendor directory disappears after running flatpak go mod LOL
           go mod vendor
       - name: COMMIT!
