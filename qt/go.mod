@@ -2,7 +2,7 @@ module github.com/brycensranch/rokon/qt
 
 go 1.22.0
 
-toolchain go1.23.4
+toolchain go1.24.0
 
 require github.com/brycensranch/rokon/core v0.0.0
 
