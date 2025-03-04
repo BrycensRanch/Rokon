@@ -2,7 +2,7 @@ module tools
 
 go 1.23.0
 
-toolchain go1.23.4
+toolchain go1.24.1
 
 require (
 	github.com/client9/misspell v0.3.4
