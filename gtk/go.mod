@@ -10,7 +10,7 @@ replace github.com/brycensranch/rokon/core => ../core
 
 require (
 	github.com/diamondburned/gotk4/pkg v0.3.1
-	github.com/koron/go-ssdp v0.0.4
+	github.com/koron/go-ssdp v0.0.5
 	github.com/spf13/viper v1.19.0
 )
 
@@ -38,7 +38,7 @@ require (
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20231121144256-b99613f794b6 // indirect
 	golang.org/x/exp v0.0.0-20241215155358-4a5509556b9e // indirect
 	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
