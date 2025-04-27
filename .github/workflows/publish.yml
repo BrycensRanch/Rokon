@@ -523,13 +523,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, windows-11-arm]
-        unix_arch:
-          - x86_64
-          - aarch64
-        arch:
-          - x64
-          - ARM64
+        include:
+          - os: windows-latest
+            unix_arch: x86_64
+            arch: x64
+          - os: windows-11-arm
+            unix_arch: aarch64
+            arch: ARM64
     env:
       result: msi
     defaults:
