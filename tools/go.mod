@@ -8,7 +8,7 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/golangci/golangci-lint v1.64.6
 	github.com/synthesio/selfextract v0.0.0-20240323225418-337a9cebfd86
-	golang.org/x/vuln v1.1.3
+	golang.org/x/vuln v1.1.4
 )
 
 require (
