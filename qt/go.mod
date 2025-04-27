@@ -9,7 +9,7 @@ require github.com/brycensranch/rokon/core v0.0.0
 replace github.com/brycensranch/rokon/core => ../core
 
 require (
-	github.com/mappu/miqt v0.7.1
+	github.com/mappu/miqt v0.10.0
 
 )
 
