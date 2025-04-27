@@ -526,11 +526,9 @@ jobs:
         include:
           - os: windows-latest
             unix_arch: x86_64
-            arch: x64
             subsystem: CLANG64
           - os: windows-11-arm
             unix_arch: aarch64
-            arch: ARM64
             subsystem: CLANGARM64
     env:
       result: msi
@@ -635,7 +633,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: rokon-${{ runner.os }}-${{ matrix.arch }}
+          name: rokon-${{ runner.os }}-${{ runner.arch }}
           path: "*.msi"
           if-no-files-found: error
       - name: Remove msi executable
@@ -643,13 +641,13 @@ jobs:
       - name: Make Portable
         run: |
           export RESULTSDIR=$(realpath "${{ runner.temp }}\\exe")
-          make TARGET="$RESULTSDIR/Rokon.exe" EXTRALDFLAGS="-s -w -H windowsgui" EXTRAGOFLAGS="-trimpath" BUILDTAGS=$BUILD_TAGS PACKAGEFORMAT=portable  PACKAGED=true build
+          make FLAVOR=gtk TARGET="$RESULTSDIR/Rokon.exe" EXTRALDFLAGS="-s -w -H windowsgui" EXTRAGOFLAGS="-trimpath" BUILDTAGS=$BUILD_TAGS PACKAGEFORMAT=portable  PACKAGED=true build
           cp packaging/windows/*.txt "$RESULTSDIR"
       - name: 🗃️ Upload Portable
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: rokon-${{ runner.os }}-Portable-${{ matrix.arch }}
+          name: rokon-${{ runner.os }}-Portable-${{ runner.arch }}
           path: ${{ runner.temp }}/exe
           include-hidden-files: true
           if-no-files-found: error
