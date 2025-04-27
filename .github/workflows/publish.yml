@@ -527,9 +527,11 @@ jobs:
           - os: windows-latest
             unix_arch: x86_64
             arch: x64
+            subsystem: CLANG64
           - os: windows-11-arm
             unix_arch: aarch64
             arch: ARM64
+            subsystem: CLANGARM64
     env:
       result: msi
     defaults:
@@ -550,7 +552,9 @@ jobs:
             mingw-w64-clang-${{matrix.unix_arch}}-gobject-introspection
             mingw-w64-clang-${{matrix.unix_arch}}-go
             mingw-w64-clang-${{matrix.unix_arch}}-imagemagick
+            mingw-w64-clang-${{matrix.unix_arch}}-7zip
             make
+          msys-system: ${{matrix.subsystem}}
           out-path: ${{ runner.temp }}/exe
           exe-name: Rokon.exe
       - name: Prepare

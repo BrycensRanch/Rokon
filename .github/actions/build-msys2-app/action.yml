@@ -25,19 +25,26 @@ runs:
     - name: Install MSYS2 Environment
       uses: msys2/setup-msys2@v2
       with:
-        msystem: CLANG64
+        msystem: ${{inputs.msys-system}}
         update: true
         install: |
           git
           zip
-          mingw-w64-clang-x86_64-7zip
           ${{ inputs.msys-dependencies }}
+    - name: Inject msys2 subsystem into env
+      shell: msys2 {0}
+      run: |
+          echo "SUBSYSTEM=${{inputs.msys-system}}" >>${GITHUB_ENV}
+    - name: downcase msys2 subsystem input
+      shell: msys2 {0}
+      run: |
+          echo "SUBSYSTEM_L=${SUBSYSTEM,,}" >>${GITHUB_ENV}
     - name: Cache Go modules and build cache
       uses: actions/cache@v4
       with:
           path: |
             C:/a/msys64/var/cache/pacman/pkg             # Cache MSYS2 packages
-            C:/a/msys64/clang64/lib/go                   # Cache Go
+            C:/a/msys64/${SUBSYSTEM_L}/lib/go                   # Cache Go
             C:/a/msys64/tmp/go-build                     # Cache Go build cache
             ${{ runner.temp }}
             !${{ runner.temp }}\exe
@@ -48,7 +55,7 @@ runs:
     - name: Build
       id: build
       run: |
-        export PATH="/clang64/bin:$PATH"
+        export PATH="/${SUBSYSTEM_L}/bin:$PATH"
         rm -rf "${{ runner.temp }}\exe"
 
         mkdir -p "$OUT_PATH"
@@ -61,9 +68,9 @@ runs:
         # result directory.
         copyDLLs() {
           ldd "$@" \
-            | { grep "=> /clang64/bin/" || true; } \
+            | { grep "=> /${SUBSYSTEM_L}/bin/" || true; } \
             | cut -d ' ' -f1 \
-            | xargs -I{} cp /clang64/bin/{} $out/
+            | xargs -I{} cp /${SUBSYSTEM_L}/bin/{} $out/
         }
 
         # Copy all of the binary's dependencies to the result directory.
@@ -77,8 +84,8 @@ runs:
 
         # Copy the RSVG and GDBus stuff.
         cp \
-          /clang64/bin/librsvg*.dll \
-          /clang64/bin/gdbus.exe \
+          /${SUBSYSTEM_L}/bin/librsvg*.dll \
+          /${SUBSYSTEM_L}/bin/gdbus.exe \
           $out
         # Copy DLLs recursively until no new ones are found.
         currentCount=$(countDLLs)
@@ -92,7 +99,7 @@ runs:
 
         # Copy the GLib schemas and GTK resources.
         (
-          cd /clang64
+          cd /${SUBSYSTEM_L}
           cp --parents -r \
             share/glib-2.0/schemas/gschemas.compiled \
             share/gtk-4.0 \
@@ -102,8 +109,8 @@ runs:
         )
       shell: msys2 {0}
       env:
-        GOROOT: /clang64/lib/go
-        GOPATH: /clang64
+        GOROOT: /${SUBSYSTEM_L}/lib/go
+        GOPATH: /${SUBSYSTEM_L}
         EXE_NAME: ${{ inputs.exe-name }}
         OUT_PATH: ${{ inputs.out-path }}
         BUILD_TAGS: ${{ inputs.build-tags }}
