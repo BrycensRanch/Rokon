@@ -246,13 +246,13 @@ jobs:
             *.AppImage
             *.AppImage.zsync
       - name: 🔷 Update Flatpak Data
+        working-directory: packaging
         run: |
-          rm packaging/flathub/go.mod.yml packaging/flathub/modules.txt
-          cd gtk
+          rm flathub/go.mod.yml flathub/modules.txt
           go mod tidy -go=1.22.0
           go mod vendor
           go run github.com/dennwc/flatpak-go-mod@latest .
-          mv modules.txt go.mod.yml ../flathub/
+          mv modules.txt go.mod.yml flathub/
           # the vendor directory disappears after running flatpak go mod LOL
           go mod vendor
       - name: COMMIT!
@@ -366,19 +366,25 @@ jobs:
       - name: Set snapcraft version
         id: set_version
         if: ${{ github.event_name == 'pull_request' }}
+        working-directory: packaging
         run: |
           yq '.version = "${{ steps.extract_version.outputs.version }}-${{ steps.sanitize_branch.outputs.sanitized_branch }}.gha${{ github.run_number }}"' -i snapcraft.yaml
       - name: Switch snap branch
         if: ${{ github.event_name == 'pull_request' }}
+        working-directory: packaging
         run: yq '.parts.rokon.source-branch = "${{ steps.extract_branch.outputs.branch }}"' -i snapcraft.yaml
       - name: Switch snap git repository
         if: ${{ github.event_name == 'pull_request' }}
+        working-directory: packaging
         run: yq '.parts.rokon.source = "${{ github.server_url }}/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}"' -i snapcraft.yaml
       - name: Force snap to be grade devel
+        working-directory: packaging
         if: ${{ github.event_name == 'pull_request' }}
         run: yq '.grade = "devel"' -i snapcraft.yaml
       - name: 🫰 Assemble the Snap
         uses: snapcore/action-build@v1
+        with:
+          path: packaging/snapcraft.yaml
         if: ${{ github.event_name == 'pull_request' }}
         id: snapcraft_build
       - name: Test Installing Snap
@@ -512,13 +518,18 @@ jobs:
             done
           fi
   windows:
-    runs-on: windows-latest
+    runs-on: ${{matrix.os}}
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
+        os: [windows-latest, windows-11-arm]
+        unix_arch:
+          - x86_64
+          - aarch64
         arch:
           - x64
+          - ARM64
     env:
       result: msi
     defaults:
@@ -533,12 +544,12 @@ jobs:
         uses: ./.github/actions/build-msys2-app
         with:
           msys-dependencies: |
-            mingw-w64-clang-x86_64-gcc
-            mingw-w64-clang-x86_64-pkg-config
-            mingw-w64-clang-x86_64-gtk4
-            mingw-w64-clang-x86_64-gobject-introspection
-            mingw-w64-clang-x86_64-go
-            mingw-w64-clang-x86_64-imagemagick
+            mingw-w64-clang-${{matrix.unix_arch}}-gcc
+            mingw-w64-clang-${{matrix.unix_arch}}-pkg-config
+            mingw-w64-clang-${{matrix.unix_arch}}-gtk4
+            mingw-w64-clang-${{matrix.unix_arch}}-gobject-introspection
+            mingw-w64-clang-${{matrix.unix_arch}}-go
+            mingw-w64-clang-${{matrix.unix_arch}}-imagemagick
             make
           out-path: ${{ runner.temp }}/exe
           exe-name: Rokon.exe
@@ -562,7 +573,7 @@ jobs:
 
           cat<<EOF >> "$GITHUB_OUTPUT"
           version=$version
-          name=Rokon-Setup-x86_64
+          name=Rokon-Setup-${{matrix.unix_arch}}
           EOF
       - name: Install
         run: |
@@ -582,11 +593,11 @@ jobs:
           wget https://www.gnu.org/licenses/agpl-3.0.rtf || true
           mv agpl-3.0.rtf LICENSE.rtf || true
           if [ -e LICENSE.rtf ]; then
-              rm $GITHUB_WORKSPACE/LICENSE.rtf || true
+              rm ../../../LICENSE.rtf || true
           fi
-          mv LICENSE.rtf $GITHUB_WORKSPACE || true
-          cd $GITHUB_WORKSPACE
-          mv *.pdf *.rtf $GITHUB_WORKSPACE/packaging/windows || true
+          mv LICENSE.rtf ../../../ || true
+          mv ../../../*.pdf $RESULTSDIR
+          mv ../../../*.rtf ../../windows
 
       - name: Make MSI installer
         uses: ./.github/actions/make-advinst-app
@@ -626,7 +637,6 @@ jobs:
       - name: Remove msi executable
         run: rm "${{ runner.temp }}\\exe\\Rokon.exe"
       - name: Make Portable
-        continue-on-error: true
         run: |
           export RESULTSDIR=$(realpath "${{ runner.temp }}\\exe")
           make TARGET="$RESULTSDIR/Rokon.exe" EXTRALDFLAGS="-s -w -H windowsgui" EXTRAGOFLAGS="-trimpath" BUILDTAGS=$BUILD_TAGS PACKAGEFORMAT=portable  PACKAGED=true build
