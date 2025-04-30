@@ -524,7 +524,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
+          - os: windows-2025
             unix_arch: x86_64
             subsystem: CLANG64
           - os: windows-11-arm
