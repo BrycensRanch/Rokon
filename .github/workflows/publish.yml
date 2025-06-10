@@ -257,7 +257,7 @@ jobs:
           go mod vendor
       - name: COMMIT!
         if: ${{ !startsWith(github.ref, 'refs/heads/dep/') }}
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v6
         with:
           # Only golang stuff! Prevents snapcraft.yaml from being updated on a PR branch!
           file_pattern: "*.mod *.sum packaging/flathub/*.yml packaging/flathub/modules.txt"
