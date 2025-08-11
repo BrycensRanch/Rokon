@@ -22,7 +22,7 @@ jobs:
       - name: Cleanup directory
         run: sudo rm -rf $GITHUB_WORKSPACE/* || true
       - name: Check out current repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Setup Docker Build Environment
@@ -47,7 +47,7 @@ jobs:
       - name: Cleanup directory
         run: sudo rm -rf $GITHUB_WORKSPACE/* || true
       - name: Check out current repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Install Required System Packages
@@ -162,7 +162,7 @@ jobs:
       - name: Cleanup directory
         run: sudo rm -rf $GITHUB_WORKSPACE/* || true
       - name: Check out current repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Install Required System Packages
@@ -332,7 +332,7 @@ jobs:
       - name: Cleanup directory
         run: sudo rm -rf $GITHUB_WORKSPACE/* || true
       - name: Check out current repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Install Required System Packages
@@ -537,7 +537,7 @@ jobs:
         shell: msys2 {0}
     steps:
       - name: Check out current repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Build using MSYS2
@@ -661,7 +661,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out current repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Install GTK4 Golang
