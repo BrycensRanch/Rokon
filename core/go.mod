@@ -11,7 +11,7 @@ require (
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20250410214317-b8ecc8b6bbe6
 	github.com/koron/go-ssdp v0.0.5
 	github.com/spf13/cobra v1.9.1
-	github.com/spf13/pflag v1.0.6
+	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.20.1
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0
 	golang.org/x/mod v0.24.0
