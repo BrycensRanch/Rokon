@@ -8,7 +8,7 @@ require (
 	github.com/adrg/xdg v0.5.3
 	github.com/brycensranch/go-aptabase/pkg v0.0.0-20241216225926-2d0f170d6246
 	github.com/go-resty/resty/v2 v2.16.5
-	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20250410214317-b8ecc8b6bbe6
+	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20251106193036-e159b5929349
 	github.com/koron/go-ssdp v0.0.5
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
