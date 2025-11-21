@@ -2,7 +2,7 @@ module main
 
 go 1.22.7
 
-require golang.org/x/net v0.33.0
+require golang.org/x/net v0.38.0
 
 require (
 	github.com/andybalholm/brotli v1.1.1
