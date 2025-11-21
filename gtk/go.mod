@@ -2,7 +2,7 @@ module github.com/brycensranch/rokon/gtk
 
 go 1.24.0
 
-toolchain go1.24.2
+toolchain go1.25.4
 
 require github.com/brycensranch/rokon/core v0.0.0
 
