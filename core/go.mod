@@ -2,7 +2,7 @@ module github.com/brycensranch/rokon/core
 
 go 1.24.0
 
-toolchain go1.24.2
+toolchain go1.25.4
 
 require (
 	github.com/adrg/xdg v0.5.3
