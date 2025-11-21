@@ -47,9 +47,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install sudo
+      - name: Install init dependencies
         run: |
-          pacman -Syu --needed --noconfirm sudo
+          pacman -Syu --needed --noconfirm sudo reflector
+          reflector --latest 20 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
       - name: Install Required System Packages
         run: |
           # Ensure the correct sections are uncommented and have the proper Include lines
