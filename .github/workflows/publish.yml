@@ -95,7 +95,7 @@ jobs:
       - name: 🖼️ Assemble the Self updating Runfile
         run: make run
       - name: 😭 Upload Failed Directories For Debug
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: rokon-${{runner.os}}-failed-tarball-x86_64
@@ -105,7 +105,7 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
       - name: 🗃️ Upload Built Tarball 📦
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: rokon-${{runner.os}}-tarball-x86_64
@@ -115,7 +115,7 @@ jobs:
             *.tar.gz
             *tar*.zsync
       - name: 🗃️ Upload Built Runfile 📦
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: rokon-${{runner.os}}-runfile-x86_64
@@ -125,7 +125,7 @@ jobs:
             *.run
             *.run.zsync
       - name: 🗃️ Upload Built ArchLinux Package 📦
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
 
         with:
@@ -141,7 +141,7 @@ jobs:
       - name: List files
         run: ls -R
       - name: 🗃️ Upload Vendored Source
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: rokon-vendored-source
           path: |
@@ -229,7 +229,7 @@ jobs:
           make fatimage
           ./*.AppImage --version
       - name: 🗃️ Upload Built AppImage 📦
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
 
         with:
@@ -239,7 +239,7 @@ jobs:
             *.AppImage
             *.AppImage.zsync
       - name: 🗃️ Upload Built RPMs 📦
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always() && (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch'
         with:
           name: rokon-rpm-fedora-x86_64
@@ -335,7 +335,7 @@ jobs:
           snap: ${{ steps.snapcraft_build.outputs.snap }}
           release: edge/${{ steps.sanitized_branch.sanitized_branch }}
       - name: 🗃️ Upload Snap
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always() && github.event_name == 'pull_request'
         with:
           name: rokon-snap-${{ matrix.arch }}
@@ -373,7 +373,7 @@ jobs:
         run: |
           cp ../*.{deb,buildinfo,changes} ./ || true
       - name: 🗃️ Upload Deb packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         continue-on-error: true
         with:
@@ -430,7 +430,7 @@ jobs:
         run: |
           flatpak --branch=beta --user run io.github.brycensranch.Rokon --version
       - name: 🥙 Upload Built Flatpaks 📦
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always() && (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
         with:
           name: rokon-flatpak-x86_64
@@ -480,7 +480,7 @@ jobs:
 
     steps:
       # See https://github.com/actions/download-artifact/issues/343 & https://github.com/actions/download-artifact/issues/339 to see why this is pinned. If you bump this version, you will be FIRED. >:(
-      - uses: actions/download-artifact@v4.1.8
+      - uses: actions/download-artifact@v6.0.0
         continue-on-error: true
         with:
           merge-multiple: true
@@ -619,7 +619,7 @@ jobs:
         run: |
           "C:\Program Files\BrycensRanch\Rokon\Rokon.exe" --version
       - name: 🗃️ Upload MSI
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: rokon-${{ runner.os }}-${{ runner.arch }}
@@ -632,7 +632,7 @@ jobs:
           export RESULTSDIR=$(realpath "${{ runner.temp }}\\exe")
           make FLAVOR=gtk TARGET="$RESULTSDIR/Rokon.exe" EXTRALDFLAGS="-s -w -H windowsgui" EXTRAGOFLAGS="-trimpath" BUILDTAGS=$BUILD_TAGS PACKAGEFORMAT=portable  PACKAGED=true build
       - name: 🗃️ Upload Portable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: rokon-${{ runner.os }}-Portable-${{ runner.arch }}
@@ -724,7 +724,7 @@ jobs:
           echo "Application confirmed in /Applications."
           tree /Applications/Rokon.app
       - name: 🗃️ Upload Built Binaries
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: rokon-${{ runner.os }}-${{ runner.arch }}
