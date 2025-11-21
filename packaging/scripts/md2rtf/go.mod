@@ -5,7 +5,7 @@ go 1.22.7
 require golang.org/x/net v0.33.0
 
 require (
-	github.com/andybalholm/brotli v1.1.1
+	github.com/andybalholm/brotli v1.2.0
 	github.com/stephenafamo/goldmark-pdf v0.4.1
 	github.com/therox/rtf-doc v0.8.27
 	github.com/yuin/goldmark v1.7.8
