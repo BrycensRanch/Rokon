@@ -169,11 +169,7 @@ jobs:
         run: |
           sudo dnf up -y --allowerasing
           sudo dnf copr enable @go-sig/golang-rawhide -y
-          sudo dnf install -y git golang gtk4-devel gobject-introspection-devel go-vendor-tools @development-tools clang @development-libs @c-development flatpak flatpak-builder fedora-packager fedora-review @rpm-development-tools go-rpm-macros yq
-          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-          flatpak remote-add --user --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
-          flatpak install --user -y flathub org.flatpak.Builder
-          flatpak update --user -y
+          sudo dnf install -y git golang gtk4-devel gobject-introspection-devel go-vendor-tools @development-tools clang @development-libs @c-development fedora-packager fedora-review @rpm-development-tools go-rpm-macros yq
       - name: Create RPM build environment
         if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch'
         run: |
@@ -204,9 +200,6 @@ jobs:
       - name: Uninstall built RPMs
         if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch'
         run: sudo dnf remove -y rokon rokon-debuginfo rokon-debugsource golang-github-brycensranch-aptabase-devel
-      - name: Lint AppStream Metadata
-        run: |
-          flatpak run --command=flatpak-builder-lint --user org.flatpak.Builder appstream packaging/usr/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml
       - name: Import GPG key
         id: import_gpg
         if: github.event_name != 'pull_request'
@@ -245,58 +238,6 @@ jobs:
           path: |
             *.AppImage
             *.AppImage.zsync
-      - name: 🔷 Update Flatpak Data
-        working-directory: packaging
-        run: |
-          rm flathub/go.mod.yml flathub/modules.txt
-          go mod tidy -go=1.22.0
-          go mod vendor
-          go run github.com/dennwc/flatpak-go-mod@latest .
-          mv modules.txt go.mod.yml flathub/
-          # the vendor directory disappears after running flatpak go mod LOL
-          go mod vendor
-      - name: COMMIT!
-        if: ${{ !startsWith(github.ref, 'refs/heads/dep/') }}
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          # Only golang stuff! Prevents snapcraft.yaml from being updated on a PR branch!
-          file_pattern: "*.mod *.sum packaging/flathub/*.yml packaging/flathub/modules.txt"
-          commit_options: "--no-verify --no-gpg-sign"
-          push_options: "--no-verify --no-signed"
-          commit_message: "build(flathub): update go vendor modules [skip ci]"
-          commit_author: "github-actions <41898282+github-actions[bot]@users.noreply.github.com>"
-      - name: Extract branch name
-        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
-        shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: extract_branch
-      - name: Set source branch for Flatpak
-        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
-        working-directory: packaging
-        run: yq '.modules[0].sources[0].branch = "${{env.BRANCH_NAME}}"' -i flathub/io.github.brycensranch.Rokon-beta.yml
-        env:
-          BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
-
-      - name: Set source URL for Flatpak
-        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
-        working-directory: packaging
-        run: yq '.modules[0].sources[0].url = "${{env.GITHUB_REPOSITORY_URL}}"' -i flathub/io.github.brycensranch.Rokon-beta.yml
-        env:
-          GITHUB_REPOSITORY_URL: "${{ github.server_url }}/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}.git"
-
-      - name: ⚙️ Assemble the Flatpak!
-        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
-        working-directory: packaging/flathub
-        run: |
-          flatpak-builder --disable-rofiles-fuse --install --user --install-deps-from=flathub --force-clean repo/ io.github.brycensranch.Rokon-beta.yml
-          # I honestly have no idea what this does.
-          flatpak build-export export repo
-          # Create a Flatpak bundle for the beta version
-          flatpak build-bundle export io.github.brycensranch.Rokon-beta.flatpak io.github.brycensranch.Rokon master --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo
-      - name: Test Flatpak
-        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
-        run: |
-          flatpak --branch=beta --user run io.github.brycensranch.Rokon --version
       - name: 🗃️ Upload Built RPMs 📦
         uses: actions/upload-artifact@v4
         if: always() && (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch'
@@ -305,15 +246,6 @@ jobs:
           if-no-files-found: error
           path: |
             *.rpm
-
-      - name: 🥙 Upload Built Flatpaks 📦
-        uses: actions/upload-artifact@v4
-        if: always() && (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
-        with:
-          name: rokon-flatpak-x86_64
-          if-no-files-found: error
-          path: |
-            flathub/*.flatpak
   ubuntu:
     timeout-minutes: 125
     strategy:
@@ -336,6 +268,10 @@ jobs:
           sudo add-apt-repository ppa:longsleep/golang-backports -y
           sudo apt install -y libgtk-4-dev libgirepository1.0-dev build-essential devscripts debhelper dh-make golang dput
           sudo snap install yq
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak remote-add --user --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
+          flatpak install --user -y flathub org.flatpak.Builder
+          flatpak update --user -y
       - name: Install Snapcraft
         if: ${{ github.event_name == 'pull_request' }}
         uses: samuelmeuli/action-snapcraft@v3
@@ -433,14 +369,74 @@ jobs:
           fi
       - name: Collect generated Debian files
         if: always()
+        continue-on-error: true
         run: |
           cp ../*.{deb,buildinfo,changes} ./ || true
       - name: 🗃️ Upload Deb packages
         uses: actions/upload-artifact@v4
         if: always()
+        continue-on-error: true
         with:
           name: rokon-deb-${{ matrix.arch }}
           path: "*.deb"
+      - name: Lint AppStream Metadata
+        run: |
+          flatpak run --command=flatpak-builder-lint --user org.flatpak.Builder appstream packaging/usr/share/metainfo/io.github.brycensranch.Rokon.metainfo.xml
+      - name: 🔷 Update Flatpak Data
+        working-directory: packaging
+        run: |
+          rm flathub/go.mod.yml flathub/modules.txt
+          go mod tidy -go=1.22.0
+          go mod vendor
+          go run github.com/dennwc/flatpak-go-mod@latest .
+          mv modules.txt go.mod.yml flathub/
+          # the vendor directory disappears after running flatpak go mod LOL
+          go mod vendor
+      - name: COMMIT!
+        if: ${{ !startsWith(github.ref, 'refs/heads/dep/') }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          # Only golang stuff! Prevents snapcraft.yaml from being updated on a PR branch!
+          file_pattern: "*.mod *.sum packaging/flathub/*.yml packaging/flathub/modules.txt"
+          commit_options: "--no-verify --no-gpg-sign"
+          push_options: "--no-verify --no-signed"
+          commit_message: "build(flathub): update go vendor modules [skip ci]"
+          commit_author: "github-actions <41898282+github-actions[bot]@users.noreply.github.com>"
+      - name: Set source branch for Flatpak
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        working-directory: packaging
+        run: yq '.modules[0].sources[0].branch = "${{env.BRANCH_NAME}}"' -i flathub/io.github.brycensranch.Rokon-beta.yml
+        env:
+          BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
+
+      - name: Set source URL for Flatpak
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        working-directory: packaging
+        run: yq '.modules[0].sources[0].url = "${{env.GITHUB_REPOSITORY_URL}}"' -i flathub/io.github.brycensranch.Rokon-beta.yml
+        env:
+          GITHUB_REPOSITORY_URL: "${{ github.server_url }}/${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}.git"
+
+      - name: ⚙️ Assemble the Flatpak!
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        working-directory: packaging/flathub
+        run: |
+          flatpak-builder --disable-rofiles-fuse --install --user --install-deps-from=flathub --force-clean repo/ io.github.brycensranch.Rokon-beta.yml
+          # I honestly have no idea what this does.
+          flatpak build-export export repo
+          # Create a Flatpak bundle for the beta version
+          flatpak build-bundle export io.github.brycensranch.Rokon-beta.flatpak io.github.brycensranch.Rokon master --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo
+      - name: Test Flatpak
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        run: |
+          flatpak --branch=beta --user run io.github.brycensranch.Rokon --version
+      - name: 🥙 Upload Built Flatpaks 📦
+        uses: actions/upload-artifact@v4
+        if: always() && (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner || github.repository_owner) != 'BrycensRanch' || github.event_name == 'pull_request' || github.ref != 'refs/heads/master'
+        with:
+          name: rokon-flatpak-x86_64
+          if-no-files-found: error
+          path: |
+            flathub/*.flatpak
       # - name: Login to GitHub Container Registry
       #   uses: docker/login-action@v3
       #   with:
