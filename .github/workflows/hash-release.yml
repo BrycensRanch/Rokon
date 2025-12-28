@@ -28,7 +28,7 @@ jobs:
       - name: Upload hashes to release
         # I don't exactly trust this random action I found on the internet, but it seems to work.
         # However, along as we use this specific commit, it should be fine.
-        uses: AButler/upload-release-assets@b2088453d893713ee5fd4452548208c49038b555
+        uses: AButler/upload-release-assets@1ba4f93a55907239dd2b9aa4be9ef61f8b582f4a
         with:
           repo-token: ${{ secrets.GH_TOKEN }}
           files: "hashes*.txt"
