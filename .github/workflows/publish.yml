@@ -27,7 +27,7 @@ jobs:
         id: meta
         uses: ./.github/actions/setup-docker-build-env
       - name: Build Docker Container and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
