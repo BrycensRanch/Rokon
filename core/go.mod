@@ -7,7 +7,7 @@ toolchain go1.24.2
 require (
 	github.com/adrg/xdg v0.5.3
 	github.com/brycensranch/go-aptabase/pkg v0.0.0-20241216225926-2d0f170d6246
-	github.com/go-resty/resty/v2 v2.16.5
+	github.com/go-resty/resty/v2 v2.17.2
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20251106193036-e159b5929349
 	github.com/koron/go-ssdp v0.1.0
 	github.com/spf13/cobra v1.10.1
