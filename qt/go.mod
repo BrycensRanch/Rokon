@@ -6,7 +6,7 @@ require github.com/brycensranch/rokon/core v0.0.0
 
 replace github.com/brycensranch/rokon/core => ../core
 
-require github.com/mappu/miqt v0.12.0
+require github.com/mappu/miqt v0.14.0
 
 require (
 	github.com/adrg/xdg v0.5.3 // indirect
