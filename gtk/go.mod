@@ -9,7 +9,7 @@ require github.com/brycensranch/rokon/core v0.0.0
 replace github.com/brycensranch/rokon/core => ../core
 
 require (
-	github.com/diamondburned/gotk4/pkg v0.3.1
+	github.com/diamondburned/gotk4/pkg v0.4.1
 	github.com/koron/go-ssdp v0.1.0
 	github.com/spf13/viper v1.21.0
 )
