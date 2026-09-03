@@ -10,7 +10,7 @@ require (
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/ianlancetaylor/cgosymbolizer v0.0.0-20251106193036-e159b5929349
 	github.com/koron/go-ssdp v0.1.0
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
 	golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6
