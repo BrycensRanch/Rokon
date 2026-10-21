@@ -1,8 +1,8 @@
 module tools
 
-go 1.23.0
+go 1.24
 
-toolchain go1.23.4
+toolchain go1.24.0
 
 require (
 	github.com/client9/misspell v0.3.4
@@ -97,7 +97,7 @@ require (
 	github.com/karamaru-alpha/copyloopvar v1.2.1 // indirect
 	github.com/kisielk/errcheck v1.9.0 // indirect
 	github.com/kkHAIKE/contextcheck v1.1.6 // indirect
-	github.com/klauspost/compress v1.18.0 // indirect
+	github.com/klauspost/compress v1.18.7 // indirect
 	github.com/kulti/thelper v0.6.3 // indirect
 	github.com/kunwardeep/paralleltest v1.0.14 // indirect
 	github.com/kyoh86/exportloopref v0.1.11 // indirect
